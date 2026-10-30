@@ -30,6 +30,7 @@ export default function App() {
     <>
       <a className="skip" href="#main">Skip to content</a>
       <header className="masthead">
+        <div className="masthead-inner">
         <div className="wordmark">
           <span className="sheet" aria-hidden="true" />
           <span>First Notice</span>
@@ -45,6 +46,7 @@ export default function App() {
             ))}
           </ol>
         </nav>
+        </div>
       </header>
       <main id="main" tabIndex={-1}>
         {section === 'record' && <Overview />}
