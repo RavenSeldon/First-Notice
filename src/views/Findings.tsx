@@ -1,5 +1,9 @@
 import { EXISTING_REGIMES } from '../data/historical-cases';
 import { Cite } from './Badge';
+import argument from '../../content/argument.md?raw';
+import { renderArgument } from '../content/render';
+
+const ARGUMENT = renderArgument(argument);
 
 export default function Findings() {
   return (
@@ -21,7 +25,9 @@ export default function Findings() {
       </p>
 
       <h2>The argument</h2>
-      <div className="author-slot" role="note">The policy argument and Canadian adoption pathway go here, in the author's words.</div>
+      {ARGUMENT
+        ? <div className="argument">{ARGUMENT}</div>
+        : <div className="author-slot" role="note">The policy argument and Canadian adoption pathway go here, in the author's words.</div>}
 
       <h2>Limits</h2>
       <ul className="limits">

@@ -32,7 +32,7 @@ export default function App() {
       <header className="masthead">
         <div className="masthead-inner">
         <div className="wordmark">
-          <span className="glyph-tile" aria-hidden="true"><img src={`${import.meta.env.BASE_URL}glyph.svg`} alt="" width="30" height="30" /></span>
+          <img className="glyph" src={`${import.meta.env.BASE_URL}glyph-mark.svg`} alt="" width="32" height="32" />
           <span>First Notice</span>
         </div>
         <nav aria-label="Sections">
