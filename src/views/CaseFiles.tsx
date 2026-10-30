@@ -34,7 +34,7 @@ export default function CaseFiles() {
               <ol className="dates">
                 {c.timeline.map(t => (
                   <li key={t.label} className={t.precision}>
-                    <span className="when">{t.precision === 'day' ? fmt(t.date) : `~${fmt(t.date)}`}</span>{' '}
+                    <span className="when">{t.display ?? fmt(t.date)}</span>{' '}
                     {t.label} <Cite ids={t.sourceIds} />
                   </li>
                 ))}

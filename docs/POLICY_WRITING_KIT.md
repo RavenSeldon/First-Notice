@@ -37,7 +37,7 @@ Each question lists the evidence you can stand on, the tension to hold rather th
 
 **Mechanism you may want to name:** *signal detection theory*. A channel full of false alarms pushes a rational receiver's threshold up, which slows its response to true alarms. Verification raises the prior on reports from known senders, so the receiver can lower the threshold for them without lowering it for everyone. (Related: alarm fatigue, the cry-wolf effect.)
 
-**Tension to hold:** verification says who sent the notice, not whether the incident is real. The app keeps these as separate assessments. A registry check is also not cryptographic authentication.
+**Tension to hold:** verification says who sent the notice, not whether the incident is real. The app keeps these as separate assessments. Its registry check is simulated with fixture credentials; it is not cryptographic authentication. The "Registry down" scenario shows the protocol failing safe: the notice still arrives, flagged.
 
 **Prompts**
 - What did the hoaxes cost the true notice?
@@ -100,10 +100,10 @@ Each question lists the evidence you can stand on, the tension to hold rather th
 | 2 | Case files | Five organizations, five separate notices | 0:30–0:50 |
 | 3 | Notice lab: "Serious, but unproven" | Uncertainty does not lower urgency | 0:50–1:20 |
 | 4 | Notice lab: "A forged sender" | A false sender is flagged, not dropped | 1:20–1:45 |
-| 5 | Notice lab: "Nobody answers", +24 h, then correction, then version 1 copy | Silence escalates; corrections never erase | 1:45–2:25 |
+| 5 | Notice lab: "Nobody answers", +24 h, then "Send an update (T2)", then version 1 copy | Silence escalates; updates reach everyone and never erase | 1:45–2:25 |
 | 6 | Findings | What Canada would need, and what this cannot do | 2:25–3:00 |
 
 **Recording notes**
-- Rehearse the clicks once before recording. Scene 5 needs: "Nobody answers" → +24 hours → +1 hour → Issue a correction → Version 1 copy.
+- Rehearse the clicks once before recording. Scene 5 needs: "Nobody answers" → +24 hours → +1 hour → Send an update (T2) → Version 1 copy.
 - Say *counterfactual* and *synthetic* aloud when those scenes are on screen; the labels are small on video.
 - Reload the record screen just before recording so the ruler draws in on camera.

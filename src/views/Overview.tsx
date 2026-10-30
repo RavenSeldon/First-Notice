@@ -58,7 +58,7 @@ export default function Overview() {
         {sa.timeline.map((t, i) => (
           <li key={t.label} className={t.precision}>
             <span className="pin-n">{i + 1}</span>
-            <span className="when">{t.precision === 'day' ? fmt(t.date) : t.sourceIds.includes('C02') ? 'Mid-August' : `Around ${fmt(t.date)}`}</span>
+            <span className="when">{t.display ?? fmt(t.date)}</span>
             <span className="what">
               {t.label}{t.developerAccountOnly && <span className="qual"> (developer's account)</span>} <Cite ids={t.sourceIds} />
             </span>

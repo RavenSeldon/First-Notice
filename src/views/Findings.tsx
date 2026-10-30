@@ -35,6 +35,7 @@ export default function Findings() {
         <li>Federal procurement leverage does not reach unrelated private research or unknown operators of open-weight models.</li>
         <li>Mandatory reporting can discourage disclosure if confidentiality, liability and competitive consequences are badly designed <Cite ids={['C10', 'C13']} />.</li>
         <li>Several Australian facts rest on the developer's own account <Cite ids={['C07', 'C09']} />.</li>
+        <li>The counterfactual replays show how notice timing might change under the proposal. They cannot show that any real-world harm would have been prevented.</li>
         <li>Deterministic tests show the protocol behaves as specified. They do not show harm prevented.</li>
       </ul>
     </section>

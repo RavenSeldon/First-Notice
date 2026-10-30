@@ -13,13 +13,18 @@
 /** Where a record comes from. Must stay visibly distinct everywhere. */
 export type Provenance = 'documented' | 'counterfactual' | 'synthetic';
 
-/** Five distinct sender-verification states (simulated registry). */
+/**
+ * Sender-verification states. All are SIMULATED: a fixture registry and fixture credentials,
+ * not cryptographic authentication or proof of real-world identity.
+ */
 export type Authenticity =
-  | 'verified'        // registered sender, credential checks out
-  | 'unconfirmed'     // registered sender, credential not yet checked
-  | 'unregistered'    // sender not in registry
-  | 'mismatch'        // claims a registered identity, credential does not match
-  | 'revoked';        // registered, credential revoked
+  | 'verified'              // registered sender, fixture credential matches
+  | 'unconfirmed'           // registered sender, credential not yet checked
+  | 'unregistered'          // sender not in registry
+  | 'mismatch'              // claims a registered identity, credential does not match
+  | 'revoked'               // registered, credential revoked
+  | 'registry-unavailable'  // the registry could not be consulted
+  | 'historically-unknown'; // a documented past notice: what verification occurred is not on record
 
 export type EvidenceStatus = 'corroborated' | 'partial' | 'unverified';
 
@@ -43,13 +48,15 @@ export interface NoticeContent {
 
 export interface Notice {
   id: string;                   // stable across versions
+  parentInvestigationId?: string; // the developer investigation this notice comes from
+  caseId?: string;              // the affected-organization case it concerns
   version: number;              // 1, 2, 3 …
   supersedesVersion?: number;
   tier: Tier;
   provenance: Provenance;
   senderId: string;
   recipientIds: string[];
-  discoveredAt: string;         // ISO — when the sender identified the activity
+  discoveredAt: string;         // ISO — qualifying discovery: when the sender identified reportable activity
   issuedAt: string;             // ISO — when this version was issued
   content: NoticeContent;
   sourceIds: string[];          // evidence-ledger IDs (C01…) where applicable
@@ -76,6 +83,7 @@ export interface LogEvent {
 }
 
 export interface Registry {
+  available?: boolean;          // false = registry could not be consulted (default true)
   senders: Record<string, { name: string; credential: string; status: 'active' | 'revoked' }>;
   recipients: Record<string, { name: string; channel: string; monitored24x7: boolean }>;
 }

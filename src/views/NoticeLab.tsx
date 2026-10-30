@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
-import { acknowledge, checkOverdue, emptyLedger, exportJSON, history, issue, revise, type IssueInput, type Ledger } from '../domain/event-log';
+import { ackRequired, acknowledge, checkOverdue, emptyLedger, exportJSON, history, issue, revise, type IssueInput, type Ledger } from '../domain/event-log';
 import { addHours, hoursBetween } from '../domain/clock';
-import { PROTOCOL, type LogEvent, type Notice } from '../domain/types';
-import { REGISTRY, COUNTERFACTUAL_SA, COUNTERFACTUAL_ASSUMPTIONS, FAILURE_INCOMPLETE, FAILURE_SPOOF, FAILURE_UNACKED } from '../data/synthetic-fixtures';
+import { PROTOCOL, type LogEvent, type Notice, type Registry } from '../domain/types';
+import { REGISTRY, REGISTRY_DOWN, COUNTERFACTUAL_SA, COUNTERFACTUAL_ASSUMPTIONS, FAILURE_INCOMPLETE, FAILURE_REGISTRY_DOWN, FAILURE_SPOOF, FAILURE_UNACKED } from '../data/synthetic-fixtures';
 import { Prov } from './Badge';
 
-interface Scenario { key: string; label: string; input: IssueInput; at: string; note: string }
+interface Scenario { key: string; label: string; input: IssueInput; at: string; note: string; registry?: Registry }
 const SCENARIOS: Scenario[] = [
   { key: 'cf-on-time', label: 'Services Australia, on the proposed clock', input: COUNTERFACTUAL_SA, at: addHours(COUNTERFACTUAL_SA.discoveredAt, 6),
     note: 'The documented case, if the developer had sent notice six hours after finding it.' },
@@ -15,6 +15,8 @@ const SCENARIOS: Scenario[] = [
     note: 'Someone claims to be a registered developer. The notice still arrives, marked for manual checking, because it might be real.' },
   { key: 'incomplete', label: 'Serious, but unproven', input: FAILURE_INCOMPLETE, at: addHours(FAILURE_INCOMPLETE.discoveredAt, 2),
     note: 'High potential consequence, partial evidence. Uncertainty does not lower urgency.' },
+  { key: 'noreg', label: 'Registry down', input: FAILURE_REGISTRY_DOWN, at: addHours(FAILURE_REGISTRY_DOWN.discoveredAt, 2), registry: REGISTRY_DOWN,
+    note: 'The sender registry cannot be reached. The urgent notice still arrives, marked for manual checking.' },
   { key: 'unacked', label: 'Nobody answers', input: FAILURE_UNACKED, at: addHours(FAILURE_UNACKED.discoveredAt, 2),
     note: 'Move the clock past 24 hours without acknowledging, and see what happens.' },
 ];
@@ -22,14 +24,15 @@ const SCENARIOS: Scenario[] = [
 const fmtTime = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' }) + ' UTC';
 
 const AUTH_TEXT: Record<string, string> = {
-  verified: 'Registered, credential matches', unconfirmed: 'Registered, credential not yet checked',
+  verified: 'Simulated registry match', unconfirmed: 'Registered, credential not yet checked',
   unregistered: 'Not in the registry', mismatch: 'Credential does not match the claimed sender', revoked: 'Credential revoked',
+  'registry-unavailable': 'Registry could not be consulted', 'historically-unknown': 'Verification not on record',
 };
 const TIER_TEXT: Record<string, string> = {
   T0: 'Information only', T1: `Urgent: acknowledge within ${PROTOCOL.ackTargetHours} h`, T2: 'Correction',
 };
 const EVENT_TEXT: Record<LogEvent['kind'], string> = {
-  'notice.issued': 'Notice issued', 'notice.revised': 'Correction issued', 'sender.checked': 'Sender checked',
+  'notice.issued': 'Notice issued', 'notice.revised': 'Update issued (T2)', 'sender.checked': 'Sender checked',
   'notice.routed': 'Routed', 'notice.received': 'Received', 'notice.acknowledged': 'Acknowledged',
   'verification.manual-required': 'Manual verification required', 'escalation.overdue-ack': 'Overdue: escalated',
   'escalation.late-notice': 'Late notice: escalated',
@@ -38,10 +41,11 @@ const detailText = (e: LogEvent) => {
   const d = e.detail;
   switch (e.kind) {
     case 'notice.issued': return `${d.tier}. ${(d.reasons as string[]).join('. ')}.`;
-    case 'sender.checked': return AUTH_TEXT[String(d.authenticity)];
+    case 'sender.checked': return `${AUTH_TEXT[String(d.authenticity)]}. ${d.method}.`;
     case 'notice.routed': return String(d.note);
-    case 'notice.received': case 'notice.acknowledged': return REGISTRY.recipients[String(d.recipient)]?.name ?? '';
-    case 'escalation.overdue-ack': return `${REGISTRY.recipients[String(d.recipient)]?.name}, due ${fmtTime(String(d.dueAt))}`;
+    case 'verification.manual-required': return AUTH_TEXT[String(d.authenticity)];
+    case 'notice.received': case 'notice.acknowledged': return `${REGISTRY.recipients[String(d.recipient)]?.name ?? ''}, version ${e.version}`;
+    case 'escalation.overdue-ack': return `${REGISTRY.recipients[String(d.recipient)]?.name}, version ${e.version}, due ${fmtTime(String(d.dueAt))}`;
     case 'escalation.late-notice': return `${d.hoursAfterDiscovery} hours after discovery; the proposal allows ${d.limit}`;
     case 'notice.revised': return `${d.reason}. Version ${e.version} supersedes ${e.version - 1}; nothing removed.`;
     default: return '';
@@ -50,31 +54,33 @@ const detailText = (e: LogEvent) => {
 
 function Sheet({ n, ledger, current, now, onAck }: { n: Notice; ledger: Ledger; current: boolean; now: string; onAck: (r: string) => void }) {
   const evs = ledger.events.filter(e => e.noticeId === n.id);
+  const mine = evs.filter(e => e.version === n.version);
   const auth = String(evs.find(e => e.kind === 'sender.checked')?.detail.authenticity);
-  const acked = new Set(evs.filter(e => e.kind === 'notice.acknowledged').map(e => String(e.detail.recipient)));
-  const overdue = new Set(evs.filter(e => e.kind === 'escalation.overdue-ack').map(e => String(e.detail.recipient)));
+  const acked = new Set(mine.filter(e => e.kind === 'notice.acknowledged').map(e => String(e.detail.recipient)));
+  const overdue = new Set(mine.filter(e => e.kind === 'escalation.overdue-ack').map(e => String(e.detail.recipient)));
   const late = evs.some(e => e.kind === 'escalation.late-notice');
   const manual = evs.some(e => e.kind === 'verification.manual-required');
   const suspicious = evs.some(e => e.kind === 'notice.routed' && e.detail.suspicious);
   const v1 = history(ledger, n.id)[0];
-  const ackNeeded = v1.tier === 'T1';
-  const due = addHours(v1.issuedAt, PROTOCOL.ackTargetHours);
+  const ackNeeded = ackRequired(ledger, n);
+  const due = addHours(n.issuedAt, PROTOCOL.ackTargetHours);
   const left = hoursBetween(now, due);
 
   return (
-    <article className={`sheet-paper ${current ? '' : 'superseded'}`} aria-label={`Notice ${n.id}, version ${n.version}`}>
+    <article className={`sheet-paper prov-${n.provenance} ${current ? '' : 'superseded'}`} aria-label={`Notice ${n.id}, version ${n.version}`}>
       <header className="sheet-head">
         <span>Notice <b>{n.id}</b></span>
         <span>Version {n.version}{n.supersedesVersion && `, supersedes ${n.supersedesVersion}`}</span>
-        <span className={`tier t-${n.tier}`}>{n.tier === 'T0' ? 'T0 information' : n.tier === 'T1' ? 'T1 urgent' : 'T2 correction'}</span>
+        <span className={`tier t-${n.tier}`}>{n.tier === 'T0' ? 'T0 information' : n.tier === 'T1' ? 'T1 urgent' : 'T2 update'}</span>
       </header>
 
 
       <dl className="typed">
+        {n.parentInvestigationId && <><dt>Investigation</dt><dd>{n.parentInvestigationId}</dd></>}
         <dt>Summary</dt><dd>{n.content.summary}</dd>
         <dt>System</dt><dd>{n.content.affectedSystem}</dd>
         <dt>Activity</dt><dd>{n.content.activityWindow}</dd>
-        <dt>Discovered</dt><dd>{fmtTime(n.discoveredAt)}</dd>
+        <dt>Qualifying discovery</dt><dd>{fmtTime(n.discoveredAt)}</dd>
         <dt>Issued</dt><dd>{fmtTime(n.issuedAt)}</dd>
       </dl>
 
@@ -88,7 +94,7 @@ function Sheet({ n, ledger, current, now, onAck }: { n: Notice; ledger: Ledger; 
       </div>
 
       <div className="axes" role="group" aria-label="Three separate assessments">
-        <div><span className="axis">Who sent it</span><span className="val">{AUTH_TEXT[auth]}</span></div>
+        <div><span className="axis">Who sent it (simulated)</span><span className="val">{AUTH_TEXT[auth]}</span></div>
         <div><span className="axis">What is known</span><span className="val">Evidence {n.content.evidence}; personal data {n.content.personalDataInvolved}</span></div>
         <div><span className="axis">How fast</span><span className="val">{TIER_TEXT[v1.tier]}; consequence {n.content.consequence}</span></div>
       </div>
@@ -120,14 +126,14 @@ function Sheet({ n, ledger, current, now, onAck }: { n: Notice; ledger: Ledger; 
 export default function NoticeLab() {
   const [k, setK] = useState(0);
   const s = SCENARIOS[k];
-  const [ledger, setLedger] = useState<Ledger>(() => issue(emptyLedger(), REGISTRY, s.input, s.at));
+  const [ledger, setLedger] = useState<Ledger>(() => issue(emptyLedger(), s.registry ?? REGISTRY, s.input, s.at));
   const [now, setNow] = useState(s.at);
   const [viewing, setViewing] = useState<number | null>(null);
 
   const load = (i: number) => {
     const x = SCENARIOS[i];
     setK(i); setNow(x.at); setViewing(null);
-    setLedger(issue(emptyLedger(), REGISTRY, x.input, x.at));
+    setLedger(issue(emptyLedger(), x.registry ?? REGISTRY, x.input, x.at));
   };
   const advance = (h: number) => { const t = addHours(now, h); setNow(t); setLedger(l => checkOverdue(l, t)); };
   const id = s.input.id;
@@ -147,7 +153,7 @@ export default function NoticeLab() {
     <section className="lab" aria-labelledby="lab-h">
       <h1 id="lab-h">Send a notice through the protocol.</h1>
       <p className="lede">
-        Pick a case, move the clock, acknowledge or don't, issue a correction. Every step goes into a record that only grows.
+        Pick a case, move the clock, acknowledge or don't, send an update. Every step goes into a record that only grows.
       </p>
 
       <div className="dockets" role="radiogroup" aria-label="Case">
@@ -187,8 +193,8 @@ export default function NoticeLab() {
             onAck={r => setLedger(l => acknowledge(l, id, r, now))} />
           <div className="sheet-actions">
             {viewing !== null && <button onClick={() => setViewing(null)}>Back to the current version</button>}
-            <button onClick={() => { setLedger(l => revise(l, id, { evidence: 'corroborated', personalDataInvolved: 'no' }, 'Logs reviewed: scope confirmed, no personal data', now)); setViewing(null); }}
-              disabled={corrected}>{corrected ? 'Correction issued' : 'Issue a correction'}</button>
+            <button onClick={() => { setLedger(l => revise(l, id, { evidence: 'corroborated', personalDataInvolved: 'no', summary: 'Update: logs reviewed, scope confirmed, no personal data involved' }, 'Logs reviewed: scope confirmed, no personal data', now)); setViewing(null); }}
+              disabled={corrected}>{corrected ? 'Update sent' : 'Send an update (T2)'}</button>
             <button onClick={download}>Download the record (JSON)</button>
           </div>
         </div>
@@ -206,7 +212,7 @@ export default function NoticeLab() {
               </li>
             ))}
           </ol>
-          <p className="qual">Proposed: urgent notice within {PROTOCOL.t1NoticeHours} hours of discovery; receipt acknowledged within {PROTOCOL.ackTargetHours} hours.</p>
+          <p className="qual">Proposed: urgent notice within {PROTOCOL.t1NoticeHours} hours of qualifying discovery; each version of an urgent notice acknowledged within {PROTOCOL.ackTargetHours} hours. Sender checks use a simulated registry and fixture credentials, not cryptographic authentication.</p>
         </aside>
       </div>
     </section>

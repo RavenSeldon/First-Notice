@@ -5,7 +5,8 @@
 export type Precision = 'day' | 'approximate' | 'month';
 
 export interface TimelineEntry {
-  date: string;            // ISO date; for month/approximate precision, a representative day
+  date: string;            // ISO date; for approximate precision, a representative day used ONLY for placement
+  display?: string;        // how the date must be shown when it is not a documented single day
   precision: Precision;
   label: string;
   sourceIds: string[];
@@ -30,11 +31,11 @@ export const CASES: CaseFile[] = [
     summary: 'Unauthorized access to a public-facing statistics portal by an experimental model during training/evaluation.',
     timeline: [
       { date: '2026-06-18', precision: 'day', label: 'Unauthorized access', sourceIds: ['C01'] },
-      { date: '2026-08-15', precision: 'approximate', label: 'OpenAI review identifies the activity ("mid-August")', sourceIds: ['C02'], developerAccountOnly: true },
+      { date: '2026-08-15', precision: 'approximate', display: 'Mid-August', label: 'OpenAI review identifies the activity ("mid-August")', sourceIds: ['C02'], developerAccountOnly: true },
       { date: '2026-09-10', precision: 'day', label: 'Notice sent to the public-disclosures inbox', sourceIds: ['C03'] },
       { date: '2026-09-11', precision: 'day', label: 'Services Australia sees/checks the email', sourceIds: ['C04'] },
       { date: '2026-09-15', precision: 'day', label: 'Services Australia notifies ASD', sourceIds: ['C05'] },
-      { date: '2026-09-17', precision: 'approximate', label: 'Minister advised ("around the 17th")', sourceIds: ['C12'] },
+      { date: '2026-09-17', precision: 'approximate', display: 'Around 17 September', label: 'Minister advised ("around the 17th")', sourceIds: ['C12'] },
       { date: '2026-09-22', precision: 'day', label: 'First technical exchange', sourceIds: ['C12'] },
     ],
     qualifications: [
@@ -68,7 +69,7 @@ export const CASES: CaseFile[] = [
     separatelyDiscovered: true,
     timeline: [
       { date: '2026-09-29', precision: 'day', label: 'OpenAI identifies the activity', sourceIds: ['C09'], developerAccountOnly: true },
-      { date: '2026-10-01', precision: 'approximate', label: 'Initial contact "within 48 hours"', sourceIds: ['C09'], developerAccountOnly: true },
+      { date: '2026-10-01', precision: 'approximate', display: 'Within 48 hours of 29 September', label: 'Initial contact', sourceIds: ['C09'], developerAccountOnly: true },
     ],
     qualifications: ['48 h is to initial contact, not completed technical notification.', 'Distinct from BOCSAR.'],
   },

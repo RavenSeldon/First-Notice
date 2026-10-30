@@ -3,12 +3,14 @@ import Overview from './views/Overview';
 import CaseFiles from './views/CaseFiles';
 import NoticeLab from './views/NoticeLab';
 import Findings from './views/Findings';
+import Evidence from './views/Evidence';
 
 const SECTIONS = [
   ['record', 'The record'],
   ['cases', 'Case files'],
   ['lab', 'Notice lab'],
   ['findings', 'Findings'],
+  ['evidence', 'Evidence'],
 ] as const;
 type Section = typeof SECTIONS[number][0];
 
@@ -53,6 +55,7 @@ export default function App() {
         {section === 'cases' && <CaseFiles />}
         {section === 'lab' && <NoticeLab />}
         {section === 'findings' && <Findings />}
+        {section === 'evidence' && <Evidence />}
       </main>
       <footer className="colophon">
         <dl className="key">

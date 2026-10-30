@@ -2,7 +2,7 @@ import type { EventKind, LogEvent, Notice, NoticeContent, Registry } from './typ
 import { PROTOCOL } from './types';
 import { addHours, hoursBetween } from './clock';
 import { triage } from './triage';
-import { checkSender } from './verification';
+import { checkSender, VERIFICATION_METHOD } from './verification';
 import { route } from './routing';
 
 /** Append-only record. Nothing is ever mutated or removed. */
@@ -22,8 +22,10 @@ export interface IssueInput {
   id: string;
   provenance: Notice['provenance'];
   senderId: string;
-  credential: string;
+  credential: string | null;
   recipientIds: string[];
+  parentInvestigationId?: string;
+  caseId?: string;
   discoveredAt: string;
   content: NoticeContent;
   sourceIds?: string[];
@@ -36,6 +38,7 @@ export function issue(l: Ledger, reg: Registry, input: IssueInput, now: string):
   const r = route(reg, t.tier, auth, input.recipientIds);
   const n: Notice = Object.freeze({
     id: input.id, version: 1, tier: t.tier, provenance: input.provenance,
+    parentInvestigationId: input.parentInvestigationId, caseId: input.caseId,
     senderId: input.senderId, recipientIds: r.deliverTo, discoveredAt: input.discoveredAt,
     issuedAt: now, content: Object.freeze({ ...input.content }), sourceIds: input.sourceIds ?? [],
   });
@@ -45,16 +48,33 @@ export function issue(l: Ledger, reg: Registry, input: IssueInput, now: string):
   if (t.tier === 'T1' && late > PROTOCOL.t1NoticeHours) {
     out = append(out, now, 'escalation.late-notice', n, { hoursAfterDiscovery: Math.round(late), limit: PROTOCOL.t1NoticeHours });
   }
-  out = append(out, now, 'sender.checked', n, { authenticity: auth });
+  out = append(out, now, 'sender.checked', n, {
+    authenticity: auth, method: VERIFICATION_METHOD,
+    registry: reg.available === false ? 'unavailable' : 'simulated fixture registry',
+  });
   out = append(out, now, 'notice.routed', n, { deliverTo: r.deliverTo, note: r.note, suspicious: r.suspicious });
   if (r.manualVerification) out = append(out, now, 'verification.manual-required', n, { authenticity: auth });
   for (const rec of r.deliverTo) out = append(out, now, 'notice.received', n, { recipient: rec });
   return out;
 }
 
+const received = (l: Ledger, n: Notice, recipient: string) =>
+  l.events.some(e => e.noticeId === n.id && e.version === n.version && e.kind === 'notice.received' && e.detail.recipient === recipient);
+const acknowledged = (l: Ledger, n: Notice, recipient: string) =>
+  l.events.some(e => e.noticeId === n.id && e.version === n.version && e.kind === 'notice.acknowledged' && e.detail.recipient === recipient);
+
+/** Every version of a notice whose original was urgent (T1) needs a receipt acknowledgment. */
+export const ackRequired = (l: Ledger, n: Notice) => history(l, n.id)[0]?.tier === 'T1';
+
+/**
+ * Acknowledge receipt of the latest version. Rejects recipients who never received it;
+ * a repeated acknowledgment is a no-op, so the record holds one acknowledgment per recipient per version.
+ */
 export function acknowledge(l: Ledger, noticeId: string, recipient: string, now: string): Ledger {
   const n = latest(l, noticeId);
   if (!n) throw new Error(`Unknown notice ${noticeId}`);
+  if (!received(l, n, recipient)) throw new Error(`${recipient} did not receive ${noticeId} v${n.version}`);
+  if (acknowledged(l, n, recipient)) return l;
   return append(l, now, 'notice.acknowledged', n, { recipient });
 }
 
@@ -66,19 +86,23 @@ export function revise(l: Ledger, noticeId: string, changes: Partial<NoticeConte
     ...prev, version: prev.version + 1, supersedesVersion: prev.version, tier: 'T2', issuedAt: now,
     content: Object.freeze({ ...prev.content, ...changes }),
   });
-  const out: Ledger = { notices: Object.freeze([...l.notices, n]) as readonly Notice[], events: l.events };
-  return append(out, now, 'notice.revised', n, { reason, changed: Object.keys(changes), originalTier: prev.tier });
+  let out: Ledger = { notices: Object.freeze([...l.notices, n]) as readonly Notice[], events: l.events };
+  out = append(out, now, 'notice.revised', n, { reason, changed: Object.keys(changes), originalTier: prev.tier });
+  // The update travels the same route as the original: every original recipient receives it.
+  out = append(out, now, 'notice.routed', n, { deliverTo: n.recipientIds, note: 'Update delivered to every recipient of the original notice', suspicious: false });
+  for (const rec of n.recipientIds) out = append(out, now, 'notice.received', n, { recipient: rec });
+  return out;
 }
 
-/** Emit escalations for T1 receipts not acknowledged within the target. Idempotent. */
+/** Emit escalations for receipts (of any version that needs one) not acknowledged in time. Idempotent. */
 export function checkOverdue(l: Ledger, now: string): Ledger {
   let out = l;
-  for (const n of l.notices.filter(x => x.version === 1 && x.tier === 'T1')) {
+  for (const n of l.notices.filter(x => ackRequired(l, x))) {
     for (const rec of n.recipientIds) {
-      const acked = l.events.some(e => e.noticeId === n.id && e.kind === 'notice.acknowledged' && e.detail.recipient === rec);
-      const already = out.events.some(e => e.noticeId === n.id && e.kind === 'escalation.overdue-ack' && e.detail.recipient === rec);
+      if (!received(l, n, rec) || acknowledged(l, n, rec)) continue;
+      const already = out.events.some(e => e.noticeId === n.id && e.version === n.version && e.kind === 'escalation.overdue-ack' && e.detail.recipient === rec);
       const due = addHours(n.issuedAt, PROTOCOL.ackTargetHours);
-      if (!acked && !already && Date.parse(now) > Date.parse(due)) {
+      if (!already && Date.parse(now) > Date.parse(due)) {
         out = append(out, now, 'escalation.overdue-ack', n, { recipient: rec, dueAt: due });
       }
     }

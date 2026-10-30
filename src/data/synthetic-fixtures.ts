@@ -21,13 +21,14 @@ export const REGISTRY: Registry = {
  */
 export const COUNTERFACTUAL_ASSUMPTIONS = [
   'Discovery set to 15 Aug 2026 to represent "mid-August" (C02); the real day is unknown.',
-  'Developer is a registered sender with a valid credential.',
+  'Developer is a registered sender with a valid credential (simulated registry match, not cryptographic authentication).',
   'A designated 24/7 recipient exists — modelled on the post-incident reroute (C08), not on any existing Canadian channel.',
   'Clock values (48 h notice, 24 h acknowledgment) are proposals, not existing law.',
 ];
 
 export const COUNTERFACTUAL_SA: IssueInput = {
   id: 'CF-SA-1', provenance: 'counterfactual', senderId: 'dev-alpha', credential: 'key-alpha',
+  parentInvestigationId: 'INV-AU-2026 (counterfactual)', caseId: 'services-australia',
   recipientIds: ['agency-security'], discoveredAt: '2026-08-15T12:00:00.000Z',
   content: {
     summary: 'Model obtained non-public access to a public statistics portal; scope still under review.',
@@ -40,15 +41,21 @@ export const COUNTERFACTUAL_SA: IssueInput = {
 
 /** The three locked failure cases. */
 export const FAILURE_SPOOF: IssueInput = {
+  parentInvestigationId: 'INV-SYN-1', caseId: 'synthetic-agency',
   id: 'SYN-SPOOF', provenance: 'synthetic', senderId: 'dev-alpha', credential: 'forged',
   recipientIds: ['agency-security'], discoveredAt: '2026-11-01T00:00:00.000Z',
   content: { summary: 'Claimed urgent incident from a forged credential', affectedSystem: 'Synthetic', activityWindow: 'Synthetic',
     consequence: 'high', evidence: 'unverified', personalDataInvolved: 'unknown' },
 };
 export const FAILURE_INCOMPLETE: IssueInput = {
+  parentInvestigationId: 'INV-SYN-1', caseId: 'synthetic-agency',
   id: 'SYN-INCOMPLETE', provenance: 'synthetic', senderId: 'dev-alpha', credential: 'key-alpha',
   recipientIds: ['agency-security'], discoveredAt: '2026-11-01T00:00:00.000Z',
   content: { summary: 'High-consequence access, evidence incomplete', affectedSystem: 'Synthetic', activityWindow: 'Synthetic',
     consequence: 'high', evidence: 'partial', personalDataInvolved: 'unknown' },
 };
 export const FAILURE_UNACKED = { ...FAILURE_INCOMPLETE, id: 'SYN-UNACKED' };
+
+/** The registry cannot be consulted: an urgent notice must still arrive, flagged for manual checking. */
+export const REGISTRY_DOWN: Registry = { ...REGISTRY, available: false };
+export const FAILURE_REGISTRY_DOWN: IssueInput = { ...FAILURE_INCOMPLETE, id: 'SYN-NOREG' };
