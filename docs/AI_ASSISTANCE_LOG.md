@@ -132,3 +132,4 @@ Copy the block below for each substantial new action. Add newest entries below e
 - **Task:** Visual design.
 - **Contribution:** Form-paper and carbon-copy design: day-scale ruler on the record, register-style case files, notice sheet with three separate assessments, stacked version copies, event-driven stamps, typed receipt log. Fraunces (participant's choice) and Courier Prime. Files: `index.html`, `src/App.tsx`, `src/views/*`, `src/styles/base.css`. Domain code and tests unchanged.
 - **Verification:** 20/20 tests, typecheck, build; screenshots at desktop, phone and dark mode, built and tested outside the project folder.
+- 13:05–13:15: Restyled to participant's direction: near-black base from Schrödinger's Civilization, palette aligned with hatchery.world (indigo surfaces; teal actions, yellow approximate/counterfactual, pink alerts), glass treatment on interactive elements only. `src/styles/base.css`, favicon in `index.html`.
