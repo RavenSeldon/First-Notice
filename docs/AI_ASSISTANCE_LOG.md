@@ -95,3 +95,26 @@ Copy the block below for each substantial new action. Add newest entries below e
 ---
 
 *This document is a provenance record, not proof of external validation. Its aim is honest, proportionate disclosure.*
+
+## Append-only updates
+
+### 2026-10-30 06:28–06:44 (America/Vancouver) — Anthropic Claude (session configured as `claude-opus-5-5`; serving model not independently attested)
+- **Task:** Repo init; evidence ledger completion.
+- **Contribution / files changed:** `git init`; `docs/PREP-PLAN.md`; `evidence/ledger.csv` C01–C14 with verbatim passages taken from participant-pasted transcripts (Defence 24 Sept, Finance 28 Sept, OpenAI post) and a direct fetch of the ISED page.
+- **Human decisions or edits:** Participant supplied URLs and transcript text, confirmed Gallagher's portfolios, froze and tagged `ledger-v1`.
+- **Verification / tests:** Passages quoted, not paraphrased. ISED page read ~80%.
+- **Caveats / unresolved:** C07, C09 are the developer's account only.
+- **Links / commit IDs:** `425ea15` (`ledger-v1`).
+
+### 2026-10-30 12:02–12:12 (America/Vancouver) — Anthropic Claude (same session)
+- **Task:** Post-kickoff implementation; new-fact verification; deployment preparation.
+- **Contribution / files changed:** Ledger C15–C18 (GC CSEMP, OECD 29 criteria, Australian 12 h/72 h critical-infrastructure rule); C16 narrowed to what the source states; C11 canonical source noted. React/TypeScript/Vite app: `src/domain/*` (triage, verification, routing, append-only event log, JSON export), `src/data/*` (ledger parsed from CSV; documented cases; labelled counterfactual and synthetic fixtures), `src/views/*`, `tests/acceptance/*`, `docs/LIMITATIONS.md`, `README.md`, `DEPLOY.md`, `scripts/deploy.sh`. Blog repo (`beamu-blog`, uncommitted): new `app/routes/first_notice/` blueprint copied from the schrodingers_civ pattern, one registration line, one sitemap entry.
+- **Human decisions or edits:** Participant set submission target to Sat 2026-10-31 22:30 PDT, authorized implementation after noon, chose `benamuwo.me/first-notice` as the home, commits and pushes personally.
+- **Verification / tests:** 20/20 acceptance tests pass; typecheck and build clean; headless-browser smoke test at phone width (overdue escalation fired, correction preserved v1, no page errors); blueprint tested in isolation (308 redirect, 200 index/assets, 404 unknown and traversal).
+- **Caveats / unresolved:** Not yet deployed; live URL unverified. Simulated registry is not cryptographic authentication. GC CSEMP read ~52%.
+- **Links / commit IDs:** `af9d96f` (`ledger-v2`).
+
+### 2026-10-30 12:12 (America/Vancouver) — Correction to "Implementation status at this entry" above
+- Production code, automated tests and a deployment route now exist (see entries above); that section is historical, not current.
+- The ledger now has 18 claims (C01–C18), reviewed in full in this session.
+- The operational submission target is **2026-10-31 22:30 PDT**, superseding 23:30.

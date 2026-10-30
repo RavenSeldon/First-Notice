@@ -10,6 +10,7 @@ npm install
 npm test        # acceptance tests (deterministic, simulated clock)
 npm run dev     # local app
 npm run build   # static build in dist/
+./scripts/deploy.sh   # publish to https://benamuwo.me/first-notice/ (see DEPLOY.md)
 ```
 
 ## Structure
