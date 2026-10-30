@@ -1,6 +1,6 @@
 /**
  * Tiny, safe renderer for the author's argument (content/argument.md).
- * Supports: "## " headings, paragraphs, "- " lists, *em*, **strong**, [C01] / [C01, C02] citations.
+ * Supports: "# " section headings, "## " subheadings, paragraphs, "- " lists, *em*, **strong**, [C01] / [C01, C02] citations.
  * No raw HTML is ever injected; React escapes all text.
  */
 import type { ReactNode } from 'react';
@@ -32,7 +32,8 @@ export function renderArgument(md: string): ReactNode[] | null {
   if (!body) return null;
   return body.split(/\n\s*\n/).map((block, b) => {
     const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
-    if (lines.length === 1 && lines[0].startsWith('## ')) return <h3 key={b}>{inline(lines[0].slice(3), `h${b}`)}</h3>;
+    if (lines.length === 1 && lines[0].startsWith('## ')) return <h4 key={b}>{inline(lines[0].slice(3), `h${b}`)}</h4>;
+    if (lines.length === 1 && lines[0].startsWith('# ')) return <h3 key={b}>{inline(lines[0].slice(2), `h${b}`)}</h3>;
     if (lines.every(l => l.startsWith('- '))) return <ul key={b}>{lines.map((l, j) => <li key={j}>{inline(l.slice(2), `l${b}-${j}`)}</li>)}</ul>;
     return <p key={b}>{inline(lines.join(' '), `p${b}`)}</p>;
   });

@@ -3,8 +3,9 @@ import { CLAIMS, claim, sourceUrls } from '../../src/data/evidence-ledger';
 import { CASES, EXISTING_REGIMES } from '../../src/data/historical-cases';
 
 describe('Historical integrity', () => {
-  it('ledger has C01–C18, each with URL and a verbatim passage', () => {
-    expect(CLAIMS.map(c => c.id)).toEqual(Array.from({ length: 18 }, (_, i) => `C${String(i + 1).padStart(2, '0')}`));
+  it('ledger IDs run consecutively from C01, each with URL and a verbatim passage', () => {
+    expect(CLAIMS.length).toBeGreaterThanOrEqual(19);
+    expect(CLAIMS.map(c => c.id)).toEqual(Array.from({ length: CLAIMS.length }, (_, i) => `C${String(i + 1).padStart(2, '0')}`));
     for (const c of CLAIMS) {
       expect(sourceUrls(c).length).toBeGreaterThan(0);
       for (const u of sourceUrls(c)) expect(u).toMatch(/^https:\/\//);

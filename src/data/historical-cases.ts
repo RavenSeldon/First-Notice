@@ -78,7 +78,7 @@ export const CASES: CaseFile[] = [
 /** Context for the proposal: existing regimes this protocol supplements, not replaces. */
 export const EXISTING_REGIMES = [
   { label: 'Canada: GC departments → Cyber Centre, ≤1 h initial / 24 h detailed', sourceIds: ['C15'], note: 'Covers departments, not external AI developers.' },
-  { label: 'Canada: GC contractors carry compliance obligations; departments accountable for third-party incidents', sourceIds: ['C16'], note: 'No specific contractor deadline established here.' },
+  { label: 'Canada: third-party suppliers report cyber events as their contracts stipulate; departments must write this into contracts', sourceIds: ['C19', 'C16'], note: 'Contract by contract, for events impacting GC information and assets; no AI-agent-specific trigger.' },
   { label: 'Australia: critical infrastructure 12 h (critical) / 72 h (other)', sourceIds: ['C18'], note: 'Covered assets only.' },
   { label: 'OECD common AI-incident reporting framework: 29 criteria', sourceIds: ['C17'], note: 'Informs interoperable fields; non-binding.' },
 ];

@@ -7,10 +7,11 @@ export default function CaseFiles() {
   return (
     <section aria-labelledby="cases-h">
       <Prov p="documented" />
-      <h1 id="cases-h">Five organizations, five separate notices.</h1>
+      <h1 id="cases-h">Five affected organizations, five different notification histories.</h1>
       <p className="lede">
-        One investigation, but no single notification. Each affected organization was told on its own date, through its own
-        channel, and one case surfaced weeks later. A protocol has to handle each of these, not just the headline case.
+        Four organizations were notified on three different dates; a fifth case was found weeks later and began with an
+        initial contact, not a full technical notice. The record does not establish every channel used. A protocol has to
+        handle each of these histories, not just the headline case.
       </p>
       <div className="register" role="table" aria-label="Register of affected organizations">
         <div className="reg-row reg-head" role="row">

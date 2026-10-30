@@ -1,9 +1,7 @@
 import { EXISTING_REGIMES } from '../data/historical-cases';
 import { Cite } from './Badge';
-import argument from '../../content/argument.md?raw';
-import { renderArgument } from '../content/render';
-
-const ARGUMENT = renderArgument(argument);
+import { renderArgument, stripComments } from '../content/render';
+import { WRITTEN } from '../content/brief';
 
 export default function Findings() {
   return (
@@ -19,15 +17,24 @@ export default function Findings() {
 
       <h2>The gap</h2>
       <p>
-        Canada's existing rules run from federal departments to the Cyber Centre <Cite ids={['C15']} />. They do not say how an
-        outside AI developer reaches the right government recipient, how that recipient knows the sender is real, or what happens
-        when nobody acknowledges.
+        Canada already requires departments to report incidents to the Cyber Centre <Cite ids={['C15']} />, and suppliers to report
+        cyber events as their contracts stipulate <Cite ids={['C19']} />. What these arrangements do not establish is a uniform,
+        AI-agent-specific early-notification pathway: one that covers what an external AI developer discovers about its own agents'
+        activity, names the recipient in advance, checks the sender, and escalates when no one acknowledges.
       </p>
 
-      <h2>The argument</h2>
-      {ARGUMENT
-        ? <div className="argument">{ARGUMENT}</div>
-        : <div className="author-slot" role="note">The policy argument and Canadian adoption pathway go here, in the author's words.</div>}
+      <h2>The brief</h2>
+      {WRITTEN.length === 0
+        ? <div className="author-slot" role="note">The policy brief goes here, in the author's words.</div>
+        : WRITTEN.map(sec => {
+            const md = stripComments(sec.md);
+            return (
+              <div key={sec.key} className="argument">
+                {!md.startsWith('# ') && <h3>{sec.title}</h3>}
+                {renderArgument(md)}
+              </div>
+            );
+          })}
 
       <h2>Limits</h2>
       <ul className="limits">
