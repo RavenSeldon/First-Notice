@@ -1,78 +1,213 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { acknowledge, checkOverdue, emptyLedger, exportJSON, history, issue, revise, type IssueInput, type Ledger } from '../domain/event-log';
-import { addHours } from '../domain/clock';
-import { PROTOCOL } from '../domain/types';
+import { addHours, hoursBetween } from '../domain/clock';
+import { PROTOCOL, type LogEvent, type Notice } from '../domain/types';
 import { REGISTRY, COUNTERFACTUAL_SA, COUNTERFACTUAL_ASSUMPTIONS, FAILURE_INCOMPLETE, FAILURE_SPOOF, FAILURE_UNACKED } from '../data/synthetic-fixtures';
 import { Prov } from './Badge';
 
-const SCENARIOS: { label: string; input: IssueInput; at: string; note: string }[] = [
-  { label: 'Counterfactual: Services Australia under the protocol', input: COUNTERFACTUAL_SA, at: addHours(COUNTERFACTUAL_SA.discoveredAt, 6), note: 'Notice issued 6 h after the assumed discovery.' },
-  { label: 'Counterfactual: documented timing (10 Sept) under the protocol', input: { ...COUNTERFACTUAL_SA, id: 'CF-SA-LATE' }, at: '2026-09-10T00:00:00.000Z', note: 'The same notice, sent when it actually was.' },
-  { label: 'Failure 1: forged sender', input: FAILURE_SPOOF, at: addHours(FAILURE_SPOOF.discoveredAt, 2), note: '' },
-  { label: 'Failure 2: high consequence, incomplete evidence', input: FAILURE_INCOMPLETE, at: addHours(FAILURE_INCOMPLETE.discoveredAt, 2), note: '' },
-  { label: 'Failure 3: unacknowledged urgent notice', input: FAILURE_UNACKED, at: addHours(FAILURE_UNACKED.discoveredAt, 2), note: 'Advance the clock past 24 h without acknowledging.' },
+interface Scenario { key: string; label: string; input: IssueInput; at: string; note: string }
+const SCENARIOS: Scenario[] = [
+  { key: 'cf-on-time', label: 'Services Australia, on the proposed clock', input: COUNTERFACTUAL_SA, at: addHours(COUNTERFACTUAL_SA.discoveredAt, 6),
+    note: 'The documented case, if the developer had sent notice six hours after finding it.' },
+  { key: 'cf-actual', label: 'Services Australia, on its actual date', input: { ...COUNTERFACTUAL_SA, id: 'CF-SA-2' }, at: '2026-09-10T00:00:00.000Z',
+    note: 'The same notice, sent on 10 September as it really was. The proposed 48-hour clock flags it as late.' },
+  { key: 'spoof', label: 'A forged sender', input: FAILURE_SPOOF, at: addHours(FAILURE_SPOOF.discoveredAt, 2),
+    note: 'Someone claims to be a registered developer. The notice still arrives, marked for manual checking, because it might be real.' },
+  { key: 'incomplete', label: 'Serious, but unproven', input: FAILURE_INCOMPLETE, at: addHours(FAILURE_INCOMPLETE.discoveredAt, 2),
+    note: 'High potential consequence, partial evidence. Uncertainty does not lower urgency.' },
+  { key: 'unacked', label: 'Nobody answers', input: FAILURE_UNACKED, at: addHours(FAILURE_UNACKED.discoveredAt, 2),
+    note: 'Move the clock past 24 hours without acknowledging, and see what happens.' },
 ];
 
+const fmtTime = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' }) + ' UTC';
+
+const AUTH_TEXT: Record<string, string> = {
+  verified: 'Registered, credential matches', unconfirmed: 'Registered, credential not yet checked',
+  unregistered: 'Not in the registry', mismatch: 'Credential does not match the claimed sender', revoked: 'Credential revoked',
+};
+const TIER_TEXT: Record<string, string> = {
+  T0: 'Information only', T1: `Urgent: acknowledge within ${PROTOCOL.ackTargetHours} h`, T2: 'Correction',
+};
+const EVENT_TEXT: Record<LogEvent['kind'], string> = {
+  'notice.issued': 'Notice issued', 'notice.revised': 'Correction issued', 'sender.checked': 'Sender checked',
+  'notice.routed': 'Routed', 'notice.received': 'Received', 'notice.acknowledged': 'Acknowledged',
+  'verification.manual-required': 'Manual verification required', 'escalation.overdue-ack': 'Overdue: escalated',
+  'escalation.late-notice': 'Late notice: escalated',
+};
+const detailText = (e: LogEvent) => {
+  const d = e.detail;
+  switch (e.kind) {
+    case 'notice.issued': return `${d.tier}. ${(d.reasons as string[]).join('. ')}.`;
+    case 'sender.checked': return AUTH_TEXT[String(d.authenticity)];
+    case 'notice.routed': return String(d.note);
+    case 'notice.received': case 'notice.acknowledged': return REGISTRY.recipients[String(d.recipient)]?.name ?? '';
+    case 'escalation.overdue-ack': return `${REGISTRY.recipients[String(d.recipient)]?.name}, due ${fmtTime(String(d.dueAt))}`;
+    case 'escalation.late-notice': return `${d.hoursAfterDiscovery} hours after discovery; the proposal allows ${d.limit}`;
+    case 'notice.revised': return `${d.reason}. Version ${e.version} supersedes ${e.version - 1}; nothing removed.`;
+    default: return '';
+  }
+};
+
+function Sheet({ n, ledger, current, now, onAck }: { n: Notice; ledger: Ledger; current: boolean; now: string; onAck: (r: string) => void }) {
+  const evs = ledger.events.filter(e => e.noticeId === n.id);
+  const auth = String(evs.find(e => e.kind === 'sender.checked')?.detail.authenticity);
+  const acked = new Set(evs.filter(e => e.kind === 'notice.acknowledged').map(e => String(e.detail.recipient)));
+  const overdue = new Set(evs.filter(e => e.kind === 'escalation.overdue-ack').map(e => String(e.detail.recipient)));
+  const late = evs.some(e => e.kind === 'escalation.late-notice');
+  const manual = evs.some(e => e.kind === 'verification.manual-required');
+  const suspicious = evs.some(e => e.kind === 'notice.routed' && e.detail.suspicious);
+  const v1 = history(ledger, n.id)[0];
+  const ackNeeded = v1.tier === 'T1';
+  const due = addHours(v1.issuedAt, PROTOCOL.ackTargetHours);
+  const left = hoursBetween(now, due);
+
+  return (
+    <article className={`sheet-paper ${current ? '' : 'superseded'}`} aria-label={`Notice ${n.id}, version ${n.version}`}>
+      <header className="sheet-head">
+        <span>Notice <b>{n.id}</b></span>
+        <span>Version {n.version}{n.supersedesVersion && `, supersedes ${n.supersedesVersion}`}</span>
+        <span className={`tier t-${n.tier}`}>{n.tier === 'T0' ? 'T0 information' : n.tier === 'T1' ? 'T1 urgent' : 'T2 correction'}</span>
+      </header>
+
+
+      <dl className="typed">
+        <dt>Summary</dt><dd>{n.content.summary}</dd>
+        <dt>System</dt><dd>{n.content.affectedSystem}</dd>
+        <dt>Activity</dt><dd>{n.content.activityWindow}</dd>
+        <dt>Discovered</dt><dd>{fmtTime(n.discoveredAt)}</dd>
+        <dt>Issued</dt><dd>{fmtTime(n.issuedAt)}</dd>
+      </dl>
+
+      <div className="stamps" aria-live="polite">
+        {!current && <span className="stamp ink">Superseded</span>}
+        {current && late && <span className="stamp red">Late notice</span>}
+        {current && suspicious && <span className="stamp red">Possible spoof</span>}
+        {current && manual && !suspicious && <span className="stamp blue">Verify sender</span>}
+        {current && ackNeeded && acked.size === n.recipientIds.length && <span className="stamp ink">Acknowledged</span>}
+        {current && overdue.size > 0 && acked.size < n.recipientIds.length && <span className="stamp red">Overdue</span>}
+      </div>
+
+      <div className="axes" role="group" aria-label="Three separate assessments">
+        <div><span className="axis">Who sent it</span><span className="val">{AUTH_TEXT[auth]}</span></div>
+        <div><span className="axis">What is known</span><span className="val">Evidence {n.content.evidence}; personal data {n.content.personalDataInvolved}</span></div>
+        <div><span className="axis">How fast</span><span className="val">{TIER_TEXT[v1.tier]}; consequence {n.content.consequence}</span></div>
+      </div>
+
+      {current && (
+        <div className="recipients">
+          <h3>Delivered to</h3>
+          <ul>
+            {n.recipientIds.map(r => (
+              <li key={r} className={overdue.has(r) && !acked.has(r) ? 'is-overdue' : ''}>
+                <span>{REGISTRY.recipients[r].name}{REGISTRY.recipients[r].monitored24x7 && <span className="qual"> staffed 24/7</span>}</span>
+                {!ackNeeded ? <span className="qual">No acknowledgment required</span>
+                  : acked.has(r) ? <span className="ok">Acknowledged</span>
+                  : <button onClick={() => onAck(r)}>Acknowledge</button>}
+              </li>
+            ))}
+          </ul>
+          {ackNeeded && acked.size < n.recipientIds.length && (
+            <p className={`due ${left < 0 ? 'late' : ''}`}>
+              {left >= 0 ? `Acknowledgment due within ${Math.ceil(left)} h` : `Acknowledgment overdue by ${Math.ceil(-left)} h`}
+            </p>
+          )}
+        </div>
+      )}
+    </article>
+  );
+}
+
 export default function NoticeLab() {
-  const [i, setI] = useState(0);
-  const s = SCENARIOS[i];
+  const [k, setK] = useState(0);
+  const s = SCENARIOS[k];
   const [ledger, setLedger] = useState<Ledger>(() => issue(emptyLedger(), REGISTRY, s.input, s.at));
   const [now, setNow] = useState(s.at);
+  const [viewing, setViewing] = useState<number | null>(null);
 
-  const load = (k: number) => { const x = SCENARIOS[k]; setI(k); setNow(x.at); setLedger(issue(emptyLedger(), REGISTRY, x.input, x.at)); };
+  const load = (i: number) => {
+    const x = SCENARIOS[i];
+    setK(i); setNow(x.at); setViewing(null);
+    setLedger(issue(emptyLedger(), REGISTRY, x.input, x.at));
+  };
   const advance = (h: number) => { const t = addHours(now, h); setNow(t); setLedger(l => checkOverdue(l, t)); };
   const id = s.input.id;
   const versions = history(ledger, id);
-  const cur = versions[versions.length - 1];
-  const acked = new Set(ledger.events.filter(e => e.kind === 'notice.acknowledged').map(e => String(e.detail.recipient)));
+  const latest = versions[versions.length - 1];
+  const shown = viewing === null ? latest : versions.find(v => v.version === viewing)!;
+  const corrected = versions.length > 1;
+  const events = useMemo(() => [...ledger.events].reverse(), [ledger]);
+
   const download = () => {
     const url = URL.createObjectURL(new Blob([exportJSON(ledger)], { type: 'application/json' }));
-    const a = document.createElement('a'); a.href = url; a.download = `first-notice-${id}.json`; a.click(); URL.revokeObjectURL(url);
+    const a = document.createElement('a'); a.href = url; a.download = `first-notice-${id}.json`; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   return (
-    <section>
-      <h2>Notice lab <Prov p={s.input.provenance} /></h2>
-      <label>Scenario{' '}
-        <select value={i} onChange={e => load(Number(e.target.value))}>{SCENARIOS.map((x, k) => <option key={k} value={k}>{x.label}</option>)}</select>
-      </label>
-      {s.note && <p className="muted">{s.note}</p>}
-      {s.input.provenance === 'counterfactual' && <details><summary>Counterfactual assumptions</summary><ul>{COUNTERFACTUAL_ASSUMPTIONS.map(a => <li key={a}>{a}</li>)}</ul></details>}
-
-      <p className="clock">Simulated clock: <time>{now.replace('T', ' ').slice(0, 16)} UTC</time>{' '}
-        <button onClick={() => advance(1)}>+1 h</button> <button onClick={() => advance(12)}>+12 h</button> <button onClick={() => advance(24)}>+24 h</button>
+    <section className="lab" aria-labelledby="lab-h">
+      <h1 id="lab-h">Send a notice through the protocol.</h1>
+      <p className="lede">
+        Pick a case, move the clock, acknowledge or don't, issue a correction. Every step goes into a record that only grows.
       </p>
 
-      <div className="grid">
-        <article className="card">
-          <h3>Notice {id} · v{cur.version} · <span className={`tier ${cur.tier}`}>{cur.tier}</span></h3>
-          <dl>
-            <dt>Sender</dt><dd>{REGISTRY.senders[cur.senderId]?.name ?? cur.senderId}</dd>
-            <dt>Authenticity</dt><dd>{String(ledger.events.find(e => e.kind === 'sender.checked')?.detail.authenticity)}</dd>
-            <dt>Evidence</dt><dd>{cur.content.evidence}</dd>
-            <dt>Consequence</dt><dd>{cur.content.consequence}</dd>
-            <dt>Personal data</dt><dd>{cur.content.personalDataInvolved}</dd>
-          </dl>
-          <p className="muted">Authenticity, evidence and urgency are assessed independently.</p>
-          <h4>Recipients</h4>
-          <ul>{cur.recipientIds.map(r => (
-            <li key={r}>{REGISTRY.recipients[r].name}{' '}
-              {acked.has(r) ? <span className="ok">acknowledged</span> : cur.tier !== 'T0' &&
-                <button onClick={() => setLedger(l => acknowledge(l, id, r, now))}>Acknowledge</button>}
-            </li>))}</ul>
-          <button onClick={() => setLedger(l => revise(l, id, { evidence: 'corroborated', personalDataInvolved: 'no' }, 'Logs reviewed: scope confirmed, no personal data', now))}>
-            Issue correction (T2)</button>{' '}
-          <button onClick={download}>Export JSON history</button>
-          {versions.length > 1 && <><h4>Versions (all preserved)</h4><ol>{versions.map(v => <li key={v.version}>v{v.version} {v.tier} — evidence {v.content.evidence}, personal data {v.content.personalDataInvolved}</li>)}</ol></>}
-        </article>
-        <article className="card">
-          <h3>Event log (append-only)</h3>
-          <ol className="log">{ledger.events.map(e => (
-            <li key={e.seq} className={e.kind.startsWith('escalation') ? 'alert' : e.kind.includes('manual') ? 'warn' : ''}>
-              <code>{e.at.slice(5, 16).replace('T', ' ')}</code> {e.kind} <span className="muted">{JSON.stringify(e.detail)}</span>
-            </li>))}</ol>
-          <p className="muted">Proposed: T1 notice within {PROTOCOL.t1NoticeHours} h of discovery; receipt acknowledgment within {PROTOCOL.ackTargetHours} h.</p>
-        </article>
+      <div className="dockets" role="radiogroup" aria-label="Case">
+        {(['counterfactual', 'synthetic'] as const).map(p => (
+          <div key={p} className="docket-group">
+            <Prov p={p} />
+            {SCENARIOS.map((x, i) => x.input.provenance === p && (
+              <button key={x.key} role="radio" aria-checked={i === k} onClick={() => load(i)}>{x.label}</button>
+            ))}
+          </div>
+        ))}
+      </div>
+      <p className="scenario-note">{s.note}</p>
+      {s.input.provenance === 'counterfactual' && (
+        <details className="assumptions"><summary>Assumptions behind this replay</summary>
+          <ul>{COUNTERFACTUAL_ASSUMPTIONS.map(a => <li key={a}>{a}</li>)}</ul>
+        </details>
+      )}
+
+      <div className="clock" role="group" aria-label="Simulated clock">
+        <span className="clock-face"><span className="qual">Simulated clock</span><time dateTime={now}>{fmtTime(now)}</time></span>
+        <button onClick={() => advance(1)}>+1 hour</button>
+        <button onClick={() => advance(12)}>+12 hours</button>
+        <button onClick={() => advance(24)}>+24 hours</button>
+      </div>
+
+      <div className="desk">
+        <div className="stack" style={{ ['--copies' as string]: versions.length - 1 }}>
+          {versions.slice(0, -1).map((v, i) => (
+            <button key={v.version} className={`copy copy-${i % 2}`} style={{ ['--i' as string]: versions.length - 1 - i }}
+              onClick={() => setViewing(viewing === v.version ? null : v.version)}
+              aria-pressed={viewing === v.version}>
+              Version {v.version} copy
+            </button>
+          ))}
+          <Sheet key={`${shown.version}`} n={shown} ledger={ledger} current={shown === latest} now={now}
+            onAck={r => setLedger(l => acknowledge(l, id, r, now))} />
+          <div className="sheet-actions">
+            {viewing !== null && <button onClick={() => setViewing(null)}>Back to the current version</button>}
+            <button onClick={() => { setLedger(l => revise(l, id, { evidence: 'corroborated', personalDataInvolved: 'no' }, 'Logs reviewed: scope confirmed, no personal data', now)); setViewing(null); }}
+              disabled={corrected}>{corrected ? 'Correction issued' : 'Issue a correction'}</button>
+            <button onClick={download}>Download the record (JSON)</button>
+          </div>
+        </div>
+
+        <aside className="receipts" aria-labelledby="rec-h">
+          <h2 id="rec-h">Record</h2>
+          <p className="qual">Newest first. Entries are added, never edited or removed.</p>
+          <ol>
+            {events.map(e => (
+              <li key={e.seq} className={e.kind.startsWith('escalation') ? 'r-alert' : e.kind.includes('manual') ? 'r-warn' : ''}>
+                <span className="r-seq">{String(e.seq).padStart(3, '0')}</span>
+                <span className="r-time">{fmtTime(e.at)}</span>
+                <span className="r-kind">{EVENT_TEXT[e.kind]}</span>
+                <span className="r-detail">{detailText(e)}</span>
+              </li>
+            ))}
+          </ol>
+          <p className="qual">Proposed: urgent notice within {PROTOCOL.t1NoticeHours} hours of discovery; receipt acknowledged within {PROTOCOL.ackTargetHours} hours.</p>
+        </aside>
       </div>
     </section>
   );

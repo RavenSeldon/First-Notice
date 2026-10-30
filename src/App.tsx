@@ -1,32 +1,65 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Overview from './views/Overview';
 import CaseFiles from './views/CaseFiles';
 import NoticeLab from './views/NoticeLab';
 import Findings from './views/Findings';
 
-const TABS = [['overview', 'The record'], ['cases', 'Case files'], ['lab', 'Notice lab'], ['findings', 'Findings']] as const;
-type Tab = typeof TABS[number][0];
+const SECTIONS = [
+  ['record', 'The record'],
+  ['cases', 'Case files'],
+  ['lab', 'Notice lab'],
+  ['findings', 'Findings'],
+] as const;
+type Section = typeof SECTIONS[number][0];
+
+const fromHash = (): Section => {
+  const h = location.hash.slice(1);
+  return (SECTIONS.find(([id]) => id === h)?.[0]) ?? 'record';
+};
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>('overview');
+  const [section, setSection] = useState<Section>(fromHash);
+  useEffect(() => {
+    const on = () => setSection(fromHash());
+    addEventListener('hashchange', on);
+    return () => removeEventListener('hashchange', on);
+  }, []);
+  useEffect(() => { document.getElementById('main')?.focus({ preventScroll: true }); scrollTo({ top: 0 }); }, [section]);
+
   return (
     <>
-      <header>
-        <h1>First Notice</h1>
-        <p className="tag">A proposed AI-incident notification protocol for Canada. <em>What changes is the account, never the record.</em></p>
+      <a className="skip" href="#main">Skip to content</a>
+      <header className="masthead">
+        <div className="wordmark">
+          <span className="sheet" aria-hidden="true" />
+          <span>First Notice</span>
+        </div>
         <nav aria-label="Sections">
-          {TABS.map(([id, label]) => (
-            <button key={id} aria-current={tab === id ? 'page' : undefined} onClick={() => setTab(id)}>{label}</button>
-          ))}
+          <ol>
+            {SECTIONS.map(([id, label], i) => (
+              <li key={id}>
+                <a href={`#${id}`} aria-current={section === id ? 'page' : undefined}>
+                  <span className="n">{i + 1}</span>{label}
+                </a>
+              </li>
+            ))}
+          </ol>
         </nav>
       </header>
-      <main>
-        {tab === 'overview' && <Overview />}
-        {tab === 'cases' && <CaseFiles />}
-        {tab === 'lab' && <NoticeLab />}
-        {tab === 'findings' && <Findings />}
+      <main id="main" tabIndex={-1}>
+        {section === 'record' && <Overview />}
+        {section === 'cases' && <CaseFiles />}
+        {section === 'lab' && <NoticeLab />}
+        {section === 'findings' && <Findings />}
       </main>
-      <footer>Documented facts cite the evidence ledger. Counterfactual and synthetic material is labelled as such. No real government systems are contacted.</footer>
+      <footer className="colophon">
+        <dl className="key">
+          <div><dt><span className="mark documented" /></dt><dd>Documented: cites the evidence ledger</dd></div>
+          <div><dt><span className="mark counterfactual" /></dt><dd>Counterfactual: the documented case replayed under the proposal</dd></div>
+          <div><dt><span className="mark synthetic" /></dt><dd>Synthetic: invented to test failure</dd></div>
+        </dl>
+        <p>A proposed Canadian protocol, built for the Mangrove Middle Powers Hackathon. No real government system is contacted. <em>What changes is the account, never the record.</em></p>
+      </footer>
     </>
   );
 }

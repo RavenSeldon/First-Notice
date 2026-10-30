@@ -118,3 +118,17 @@ Copy the block below for each substantial new action. Add newest entries below e
 - Production code, automated tests and a deployment route now exist (see entries above); that section is historical, not current.
 - The ledger now has 18 claims (C01–C18), reviewed in full in this session.
 - The operational submission target is **2026-10-31 22:30 PDT**, superseding 23:30.
+
+### 2026-10-30 12:12–12:31 (America/Vancouver) — Anthropic Claude (same session)
+- **Task:** Deployment support.
+- **Contribution:** Commands for a read-only GitHub deploy key on the droplet, the `debug.log` pull conflict, and push/deploy order.
+- **Correction:** Claude had run `npm install` in a Linux sandbox, leaving Linux-only binaries that broke the Mac build. Participant ran `npm ci` on the Mac; Claude no longer installs or builds in the project folder.
+- **Verification:** Participant reported 20/20 tests and a clean build on the Mac.
+
+### 2026-10-30 12:33 (America/Vancouver) — Deployed; live check by Claude
+- Participant deployed to https://benamuwo.me/first-notice/ (after adding the `neurascape` SSH alias). Claude checked the live page in the browser: 4 views, 5 case files, 5 scenarios behave as tested, overdue escalation and T2 version preservation work, no unresolved citations, no horizontal scroll.
+
+### 2026-10-30 12:35–13:00 (America/Vancouver) — Anthropic Claude (same session)
+- **Task:** Visual design.
+- **Contribution:** Form-paper and carbon-copy design: day-scale ruler on the record, register-style case files, notice sheet with three separate assessments, stacked version copies, event-driven stamps, typed receipt log. Fraunces (participant's choice) and Courier Prime. Files: `index.html`, `src/App.tsx`, `src/views/*`, `src/styles/base.css`. Domain code and tests unchanged.
+- **Verification:** 20/20 tests, typecheck, build; screenshots at desktop, phone and dark mode, built and tested outside the project folder.
