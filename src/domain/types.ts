@@ -13,8 +13,11 @@
 /** Where a record comes from. Must stay visibly distinct everywhere. */
 export type Provenance = 'documented' | 'counterfactual' | 'synthetic';
 
+/** The five canonical sender-verification states (frozen spec v1.2 §4). */
+export type CanonicalAuth = 'Verified' | 'Unverified' | 'Failed' | 'Registry unavailable' | 'Historically unknown';
+
 /**
- * Sender-verification states. All are SIMULATED: a fixture registry and fixture credentials,
+ * Internal sender-verification states, mapped to the canonical five. All are SIMULATED: a fixture registry and fixture credentials,
  * not cryptographic authentication or proof of real-world identity.
  */
 export type Authenticity =
@@ -31,9 +34,12 @@ export type EvidenceStatus = 'corroborated' | 'partial' | 'unverified';
 export type Consequence = 'low' | 'moderate' | 'high';
 
 /**
+ * Tier is the substantive classification; VERSION (v1, v2…) is the evolving account. They are independent.
  * T0 — informational; no mandatory acknowledgment.
- * T1 — urgent; mandatory receipt acknowledgment, 48 h notice clock.
- * T2 — update or correction to an earlier notice; supersedes but never erases.
+ * T1 — credible, potentially significant, not yet substantiated; acknowledgment required, 48 h notice clock.
+ * T2 — substantiated notifiable activity: corroborated, materially significant unauthorized activity
+ *      (frozen spec v1.2 §4). Actionable technical update; earlier provisional versions preserved.
+ * An update re-classifies on its merits: it can raise, keep or lower the tier, with the reasoning recorded.
  */
 export type Tier = 'T0' | 'T1' | 'T2';
 
@@ -65,6 +71,7 @@ export interface Notice {
 export type EventKind =
   | 'notice.issued'
   | 'notice.revised'
+  | 'notice.reclassified'
   | 'sender.checked'
   | 'notice.routed'
   | 'notice.received'

@@ -2,7 +2,7 @@ import type { EventKind, LogEvent, Notice, NoticeContent, Registry } from './typ
 import { PROTOCOL } from './types';
 import { addHours, hoursBetween } from './clock';
 import { triage } from './triage';
-import { checkSender, VERIFICATION_METHOD } from './verification';
+import { CANONICAL, checkSender, VERIFICATION_METHOD } from './verification';
 import { route } from './routing';
 
 /** Append-only record. Nothing is ever mutated or removed. */
@@ -45,11 +45,11 @@ export function issue(l: Ledger, reg: Registry, input: IssueInput, now: string):
   let out: Ledger = { notices: Object.freeze([...l.notices, n]) as readonly Notice[], events: l.events };
   out = append(out, now, 'notice.issued', n, { tier: t.tier, reasons: t.reasons });
   const late = hoursBetween(input.discoveredAt, now);
-  if (t.tier === 'T1' && late > PROTOCOL.t1NoticeHours) {
+  if (t.tier !== 'T0' && late > PROTOCOL.t1NoticeHours) {
     out = append(out, now, 'escalation.late-notice', n, { hoursAfterDiscovery: Math.round(late), limit: PROTOCOL.t1NoticeHours });
   }
   out = append(out, now, 'sender.checked', n, {
-    authenticity: auth, method: VERIFICATION_METHOD,
+    authenticity: auth, canonical: CANONICAL[auth], method: VERIFICATION_METHOD,
     registry: reg.available === false ? 'unavailable' : 'simulated fixture registry',
   });
   out = append(out, now, 'notice.routed', n, { deliverTo: r.deliverTo, note: r.note, suspicious: r.suspicious });
@@ -63,8 +63,8 @@ const received = (l: Ledger, n: Notice, recipient: string) =>
 const acknowledged = (l: Ledger, n: Notice, recipient: string) =>
   l.events.some(e => e.noticeId === n.id && e.version === n.version && e.kind === 'notice.acknowledged' && e.detail.recipient === recipient);
 
-/** Every version of a notice whose original was urgent (T1) needs a receipt acknowledgment. */
-export const ackRequired = (l: Ledger, n: Notice) => history(l, n.id)[0]?.tier === 'T1';
+/** Every T1 or T2 version needs its own receipt acknowledgment; T0 versions do not. */
+export const ackRequired = (_l: Ledger, n: Notice) => n.tier !== 'T0';
 
 /**
  * Acknowledge receipt of the latest version. Rejects recipients who never received it;
@@ -78,16 +78,22 @@ export function acknowledge(l: Ledger, noticeId: string, recipient: string, now:
   return append(l, now, 'notice.acknowledged', n, { recipient });
 }
 
-/** Correction: appends version n+1 as T2; the original remains in the record. */
+/**
+ * Update or correction: appends version n+1 and re-classifies it on its merits.
+ * The tier can rise, stay or fall; a change of tier is recorded as its own event.
+ * Earlier versions and their timestamps remain in the record.
+ */
 export function revise(l: Ledger, noticeId: string, changes: Partial<NoticeContent>, reason: string, now: string): Ledger {
   const prev = latest(l, noticeId);
   if (!prev) throw new Error(`Unknown notice ${noticeId}`);
+  const content = Object.freeze({ ...prev.content, ...changes });
+  const t = triage(content);
   const n: Notice = Object.freeze({
-    ...prev, version: prev.version + 1, supersedesVersion: prev.version, tier: 'T2', issuedAt: now,
-    content: Object.freeze({ ...prev.content, ...changes }),
+    ...prev, version: prev.version + 1, supersedesVersion: prev.version, tier: t.tier, issuedAt: now, content,
   });
   let out: Ledger = { notices: Object.freeze([...l.notices, n]) as readonly Notice[], events: l.events };
-  out = append(out, now, 'notice.revised', n, { reason, changed: Object.keys(changes), originalTier: prev.tier });
+  out = append(out, now, 'notice.revised', n, { reason, changed: Object.keys(changes), tier: t.tier });
+  if (t.tier !== prev.tier) out = append(out, now, 'notice.reclassified', n, { from: prev.tier, to: t.tier, reasons: t.reasons });
   // The update travels the same route as the original: every original recipient receives it.
   out = append(out, now, 'notice.routed', n, { deliverTo: n.recipientIds, note: 'Update delivered to every recipient of the original notice', suspicious: false });
   for (const rec of n.recipientIds) out = append(out, now, 'notice.received', n, { recipient: rec });

@@ -1,4 +1,4 @@
-import type { Authenticity, Registry } from './types';
+import type { Authenticity, CanonicalAuth, Registry } from './types';
 
 export const VERIFICATION_METHOD =
   'Simulated registry lookup against fixture credentials; not cryptographic authentication';
@@ -19,3 +19,28 @@ export function checkSender(reg: Registry, senderId: string, credential: string 
 
 export const needsManualVerification = (a: Authenticity) => a !== 'verified';
 export const isSuspicious = (a: Authenticity) => a === 'mismatch' || a === 'revoked';
+
+/**
+ * Map the finer internal states onto the canonical five.
+ * Unregistered is Unverified, not Failed: an unknown reporter may be legitimate but absent from the registry.
+ * Failed is reserved for positive evidence of an invalid credential.
+ */
+export const CANONICAL: Record<Authenticity, CanonicalAuth> = {
+  verified: 'Verified',
+  unconfirmed: 'Unverified',
+  unregistered: 'Unverified',
+  mismatch: 'Failed',
+  revoked: 'Failed',
+  'registry-unavailable': 'Registry unavailable',
+  'historically-unknown': 'Historically unknown',
+};
+export const SPECIFIC: Record<Authenticity, string> = {
+  verified: 'simulated registry match',
+  unconfirmed: 'registered, credential not yet checked',
+  unregistered: 'not in the registry',
+  mismatch: 'credential does not match the claimed sender',
+  revoked: 'credential revoked',
+  'registry-unavailable': 'the registry could not be consulted',
+  'historically-unknown': 'how the sender was verified is not on record',
+};
+export const describeAuth = (a: Authenticity) => `${CANONICAL[a]}: ${SPECIFIC[a]}`;

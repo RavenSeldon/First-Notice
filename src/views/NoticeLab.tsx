@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { ackRequired, acknowledge, checkOverdue, emptyLedger, exportJSON, history, issue, revise, type IssueInput, type Ledger } from '../domain/event-log';
 import { addHours, hoursBetween } from '../domain/clock';
-import { PROTOCOL, type LogEvent, type Notice, type Registry } from '../domain/types';
+import { PROTOCOL, type Authenticity, type LogEvent, type Notice, type Registry } from '../domain/types';
+import { describeAuth } from '../domain/verification';
 import { REGISTRY, REGISTRY_DOWN, COUNTERFACTUAL_SA, COUNTERFACTUAL_ASSUMPTIONS, FAILURE_INCOMPLETE, FAILURE_REGISTRY_DOWN, FAILURE_SPOOF, FAILURE_UNACKED } from '../data/synthetic-fixtures';
 import { Prov } from './Badge';
 
@@ -23,16 +24,15 @@ const SCENARIOS: Scenario[] = [
 
 const fmtTime = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' }) + ' UTC';
 
-const AUTH_TEXT: Record<string, string> = {
-  verified: 'Simulated registry match', unconfirmed: 'Registered, credential not yet checked',
-  unregistered: 'Not in the registry', mismatch: 'Credential does not match the claimed sender', revoked: 'Credential revoked',
-  'registry-unavailable': 'Registry could not be consulted', 'historically-unknown': 'Verification not on record',
-};
+const AUTH_TEXT = (a: string) => describeAuth(a as Authenticity);
 const TIER_TEXT: Record<string, string> = {
-  T0: 'Information only', T1: `Urgent: acknowledge within ${PROTOCOL.ackTargetHours} h`, T2: 'Correction',
+  T0: 'Information only; no acknowledgment',
+  T1: `Provisional, not yet substantiated; acknowledge within ${PROTOCOL.ackTargetHours} h`,
+  T2: `Substantiated; acknowledge within ${PROTOCOL.ackTargetHours} h`,
 };
+const TIER_LABEL: Record<string, string> = { T0: 'T0 information', T1: 'T1 provisional', T2: 'T2 substantiated' };
 const EVENT_TEXT: Record<LogEvent['kind'], string> = {
-  'notice.issued': 'Notice issued', 'notice.revised': 'Update issued (T2)', 'sender.checked': 'Sender checked',
+  'notice.issued': 'Notice issued', 'notice.revised': 'Update issued', 'notice.reclassified': 'Reclassified', 'sender.checked': 'Sender checked',
   'notice.routed': 'Routed', 'notice.received': 'Received', 'notice.acknowledged': 'Acknowledged',
   'verification.manual-required': 'Manual verification required', 'escalation.overdue-ack': 'Overdue: escalated',
   'escalation.late-notice': 'Late notice: escalated',
@@ -41,13 +41,14 @@ const detailText = (e: LogEvent) => {
   const d = e.detail;
   switch (e.kind) {
     case 'notice.issued': return `${d.tier}. ${(d.reasons as string[]).join('. ')}.`;
-    case 'sender.checked': return `${AUTH_TEXT[String(d.authenticity)]}. ${d.method}.`;
+    case 'sender.checked': return `${AUTH_TEXT(String(d.authenticity))}. ${d.method}.`;
     case 'notice.routed': return String(d.note);
-    case 'verification.manual-required': return AUTH_TEXT[String(d.authenticity)];
+    case 'verification.manual-required': return AUTH_TEXT(String(d.authenticity));
     case 'notice.received': case 'notice.acknowledged': return `${REGISTRY.recipients[String(d.recipient)]?.name ?? ''}, version ${e.version}`;
     case 'escalation.overdue-ack': return `${REGISTRY.recipients[String(d.recipient)]?.name}, version ${e.version}, due ${fmtTime(String(d.dueAt))}`;
     case 'escalation.late-notice': return `${d.hoursAfterDiscovery} hours after discovery; the proposal allows ${d.limit}`;
     case 'notice.revised': return `${d.reason}. Version ${e.version} supersedes ${e.version - 1}; nothing removed.`;
+    case 'notice.reclassified': return `${d.from} to ${d.to}. ${(d.reasons as string[]).join('. ')}.`;
     default: return '';
   }
 };
@@ -61,7 +62,6 @@ function Sheet({ n, ledger, current, now, onAck }: { n: Notice; ledger: Ledger; 
   const late = evs.some(e => e.kind === 'escalation.late-notice');
   const manual = evs.some(e => e.kind === 'verification.manual-required');
   const suspicious = evs.some(e => e.kind === 'notice.routed' && e.detail.suspicious);
-  const v1 = history(ledger, n.id)[0];
   const ackNeeded = ackRequired(ledger, n);
   const due = addHours(n.issuedAt, PROTOCOL.ackTargetHours);
   const left = hoursBetween(now, due);
@@ -71,7 +71,7 @@ function Sheet({ n, ledger, current, now, onAck }: { n: Notice; ledger: Ledger; 
       <header className="sheet-head">
         <span>Notice <b>{n.id}</b></span>
         <span>Version {n.version}{n.supersedesVersion && `, supersedes ${n.supersedesVersion}`}</span>
-        <span className={`tier t-${n.tier}`}>{n.tier === 'T0' ? 'T0 information' : n.tier === 'T1' ? 'T1 urgent' : 'T2 update'}</span>
+        <span className={`tier t-${n.tier}`}>{TIER_LABEL[n.tier]}</span>
       </header>
 
 
@@ -94,9 +94,9 @@ function Sheet({ n, ledger, current, now, onAck }: { n: Notice; ledger: Ledger; 
       </div>
 
       <div className="axes" role="group" aria-label="Three separate assessments">
-        <div><span className="axis">Who sent it (simulated)</span><span className="val">{AUTH_TEXT[auth]}</span></div>
+        <div><span className="axis">Who sent it (simulated)</span><span className="val">{AUTH_TEXT(auth)}</span></div>
         <div><span className="axis">What is known</span><span className="val">Evidence {n.content.evidence}; personal data {n.content.personalDataInvolved}</span></div>
-        <div><span className="axis">How fast</span><span className="val">{TIER_TEXT[v1.tier]}; consequence {n.content.consequence}</span></div>
+        <div><span className="axis">How fast</span><span className="val">{TIER_TEXT[n.tier]}; consequence {n.content.consequence}</span></div>
       </div>
 
       {current && (
@@ -140,7 +140,6 @@ export default function NoticeLab() {
   const versions = history(ledger, id);
   const latest = versions[versions.length - 1];
   const shown = viewing === null ? latest : versions.find(v => v.version === viewing)!;
-  const corrected = versions.length > 1;
   const events = useMemo(() => [...ledger.events].reverse(), [ledger]);
 
   const download = () => {
@@ -153,7 +152,7 @@ export default function NoticeLab() {
     <section className="lab" aria-labelledby="lab-h">
       <h1 id="lab-h">Send a notice through the protocol.</h1>
       <p className="lede">
-        Pick a case, move the clock, acknowledge or don't, send an update. Every step goes into a record that only grows.
+        Pick a case, move the clock, acknowledge or don't, send updates. The tier follows the evidence; every version stays in a record that only grows.
       </p>
 
       <div className="dockets" role="radiogroup" aria-label="Case">
@@ -193,8 +192,10 @@ export default function NoticeLab() {
             onAck={r => setLedger(l => acknowledge(l, id, r, now))} />
           <div className="sheet-actions">
             {viewing !== null && <button onClick={() => setViewing(null)}>Back to the current version</button>}
-            <button onClick={() => { setLedger(l => revise(l, id, { evidence: 'corroborated', personalDataInvolved: 'no', summary: 'Update: logs reviewed, scope confirmed, no personal data involved' }, 'Logs reviewed: scope confirmed, no personal data', now)); setViewing(null); }}
-              disabled={corrected}>{corrected ? 'Update sent' : 'Send an update (T2)'}</button>
+            <button onClick={() => { setLedger(l => revise(l, id, { evidence: 'partial', summary: 'Update: review continuing; scope not yet established' }, 'Further evidence; still unresolved', now)); setViewing(null); }}
+              disabled={versions.length >= 5}>Update: still unresolved</button>
+            <button onClick={() => { setLedger(l => revise(l, id, { evidence: 'corroborated', summary: 'Update: logs corroborate the unauthorized access; scope confirmed' }, 'Logs corroborate the activity', now)); setViewing(null); }}
+              disabled={versions.length >= 5 || latest.content.evidence === 'corroborated'}>Update: activity corroborated</button>
             <button onClick={download}>Download the record (JSON)</button>
           </div>
         </div>
