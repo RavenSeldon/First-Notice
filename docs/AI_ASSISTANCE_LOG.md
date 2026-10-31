@@ -181,3 +181,7 @@ Copy the block below for each substantial new action. Add newest entries below e
 ### 2026-10-30 20:51–20:55 (America/Vancouver) — BRIEF 4 (participant-authored); Claude checks
 - Participant supplied BRIEF 4. Claude placed it, removing only escaped brackets (5 citations). Flagged one sentence going beyond C10 ("reputational and commercial exposure"; burden on recipients) and one imprecise citation.
 - At the participant's choice: the sentence was narrowed to Claude's suggested wording, which stays within the C10 passages ("legal exposure … over-reporting and unreasonable burden"), and C22 was added beside C09 on the NSW technical-notification sentence. No other changes. 628 words.
+
+### 2026-10-30 20:54–21:05 (America/Vancouver) — BRIEF 5 (participant-authored); brief typography
+- Participant supplied BRIEF 5. Claude placed it; formatting only (first line as heading, paragraph breaks). Flagged the missing four-outcome list; the participant supplied it and Claude inserted it unchanged. No overreach found. Brief complete: 2,658 words, 21 ledger entries cited.
+- At the participant's request, brief typography on the Findings screen: numbered section titles (teal badge), bold italic subheadings with a teal rule, rules between sections, more generous body leading. Light and dark mode checked by screenshot. `src/views/Findings.tsx`, `src/styles/base.css`.

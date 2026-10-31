@@ -26,15 +26,15 @@ export default function Findings() {
       <h2>The brief</h2>
       {WRITTEN.length === 0
         ? <div className="author-slot" role="note">The policy brief goes here, in the author's words.</div>
-        : WRITTEN.map(sec => {
+        : <div className="brief">{WRITTEN.map(sec => {
             const md = stripComments(sec.md);
             return (
-              <div key={sec.key} className="argument">
+              <div key={sec.key} className="argument brief-section">
                 {!md.startsWith('# ') && <h3>{sec.title}</h3>}
                 {renderArgument(md)}
               </div>
             );
-          })}
+          })}</div>}
 
       <h2>Limits</h2>
       <ul className="limits">
