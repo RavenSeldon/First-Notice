@@ -292,7 +292,7 @@ summary { cursor: pointer; padding: 10px 0; font-weight: 600; min-height: 44px; 
 }
 
 /* Language switch, draft banner, page-aware footer */
-.lang { display: inline-flex; gap: 10px; font-size: .86rem; }
+.lang { display: inline-flex; gap: 5px; font-size: .72rem; letter-spacing: .04em; color: var(--muted); }
 .lang a { color: var(--muted); }
 .lang a:hover { color: var(--ink); }
 .lang [aria-current] { color: var(--ink); font-weight: 600; }
@@ -302,6 +302,5 @@ summary { cursor: pointer; padding: 10px 0; font-weight: 600; min-height: 44px; 
 .pager a:hover { color: var(--action); }
 .pager-next { text-align: right; align-items: flex-end; }
 .foot-note { margin: 0 0 14px; max-width: 70ch; }
-.foot-base { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 24px; }
-.foot-base p { margin: 0; max-width: 80ch; }
+.foot-base { margin: 0; max-width: 80ch; }
 @media (max-width: 860px) { .masthead nav { order: 2; flex-basis: 100%; } }

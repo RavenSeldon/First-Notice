@@ -38,8 +38,9 @@ const fromHash = (): Section => {
 function LangSwitch() {
   return (
     <span className="lang" role="group" aria-label={t('Language')}>
-      {FRENCH ? <a href={langHref('en')} hrefLang="en" lang="en">English</a> : <span aria-current="true">English</span>}
-      {FRENCH ? <span aria-current="true">Français</span> : <a href={langHref('fr')} hrefLang="fr" lang="fr">Français</a>}
+      {FRENCH ? <a href={langHref('en')} hrefLang="en" lang="en" title="English">EN</a> : <span aria-current="true" title="English">EN</span>}
+      <span aria-hidden="true">|</span>
+      {FRENCH ? <span aria-current="true" title="Français">FR</span> : <a href={langHref('fr')} hrefLang="fr" lang="fr" title="Français">FR</a>}
     </span>
   );
 }
@@ -99,10 +100,7 @@ export default function App() {
           ))}
         </dl>
         <p className="foot-note">{t(foot.note)}</p>
-        <div className="foot-base">
-          <p>{t('A proposed Canadian protocol, built for the Mangrove Middle Powers Hackathon. No real government system is contacted.')} <em>{t('What changes is the account, never the record.')}</em></p>
-          <LangSwitch />
-        </div>
+        <p className="foot-base">{t('A proposed Canadian protocol, built for the Mangrove Middle Powers Hackathon. No real government system is contacted.')} <em>{t('What changes is the account, never the record.')}</em></p>
       </footer>
     </>
   );
