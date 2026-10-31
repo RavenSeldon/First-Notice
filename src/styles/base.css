@@ -290,3 +290,18 @@ summary { cursor: pointer; padding: 10px 0; font-weight: 600; min-height: 44px; 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Language switch, draft banner, page-aware footer */
+.lang { display: inline-flex; gap: 10px; font-size: .86rem; }
+.lang a { color: var(--muted); }
+.lang a:hover { color: var(--ink); }
+.lang [aria-current] { color: var(--ink); font-weight: 600; }
+.draft-banner { max-width: 1160px; margin: 12px auto 0; padding: 8px clamp(16px, 4vw, 40px); font-size: .86rem; color: var(--muted); }
+.pager { display: flex; justify-content: space-between; gap: 16px; margin: 0 0 24px; padding-bottom: 20px; border-bottom: 1px solid var(--rule); }
+.pager a { display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: var(--ink); font-size: 1rem; }
+.pager a:hover { color: var(--action); }
+.pager-next { text-align: right; align-items: flex-end; }
+.foot-note { margin: 0 0 14px; max-width: 70ch; }
+.foot-base { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 24px; }
+.foot-base p { margin: 0; max-width: 80ch; }
+@media (max-width: 860px) { .masthead nav { order: 2; flex-basis: 100%; } }

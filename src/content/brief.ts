@@ -22,3 +22,13 @@ export const BRIEF: BriefSection[] = Object.entries(files)
 
 /** Sections the author has actually written (anything besides comments). */
 export const WRITTEN = BRIEF.filter(s => stripComments(s.md).length > 0);
+
+/** Draft French translation of the brief (content/brief/fr/), same filenames and citations. English is authoritative. */
+const filesFr = import.meta.glob('../../content/brief/fr/*.md', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+export const BRIEF_FR: BriefSection[] = Object.entries(filesFr)
+  .map(([path, md]) => {
+    const key = path.split('/').pop()!.replace(/\.md$/, '');
+    return { key, md, ...(META[key] ?? { title: key, target: 0 }) };
+  })
+  .sort((a, b) => a.key.localeCompare(b.key));
+export const WRITTEN_FR = BRIEF_FR.filter(s => stripComments(s.md).length > 0);
