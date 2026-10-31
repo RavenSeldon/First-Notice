@@ -175,6 +175,15 @@ export default function NoticeLab() {
         ))}
       </div>
       <p className="scenario-note">{t(s.note)}</p>
+      <details className="try-path">
+        <summary>{t('Try this in 60 seconds')}</summary>
+        <ol>
+          <li>{t('Open “Serious, but unproven”: partial evidence still produces T1.')}</li>
+          <li>{t('Press +24 hours, then +1 hour, without acknowledging: the record escalates.')}</li>
+          <li>{t('Press “Update: activity corroborated”: the tier becomes T2.')}</li>
+          <li>{t('Open the “Version 1 copy”: the original survives, marked superseded.')}</li>
+        </ol>
+      </details>
       <p className="qual lab-scope">{t('This lab demonstrates selected protocol paths. The Unverified sender state is specified in the brief but not simulated here; Historically unknown applies only to reconstructions of past notices.')}</p>
       {s.input.provenance === 'counterfactual' && (
         <details className="assumptions"><summary>{t('Assumptions behind this replay')}</summary>

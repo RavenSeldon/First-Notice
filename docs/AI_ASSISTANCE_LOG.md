@@ -193,3 +193,11 @@ Copy the block below for each substantial new action. Add newest entries below e
 - **Interface:** the acknowledgment note ("confirms receipt only…") appears at the controls; the "Nobody answers" instruction names the +24 h then +1 h sequence; a new "Correction: impact reassessed as low" button shows a tier falling (T2 → T0) with the reasoning kept; a scope note lists what the lab does not simulate; "How fast" is renamed "Tier and response".
 - **French:** new strings added to `src/i18n/fr.ts` as Claude's draft translations, marked in the file for the participant's review. Work was done on the participant's current repository, including the French translation layer added since Claude's previous changes.
 - **Verification:** 48/48 tests (4 new, 1 updated), typecheck, build; click-through in English and French; files confirmed by checksum.
+
+### 2026-10-31 09:44–10:10 (America/Vancouver) — Final improvement pass (external review, participant-supplied); Claude
+- Already done before this pass: the Notice Lab copy and acknowledgment items (30 Oct, 23:35), plus T0 and downgrades now demonstrated.
+- **BRIEF 1:** "including during their own testing" narrowed to match BRIEF 3: "including during testing and evaluation expressly covered by the participating contract" (English and French). Applied with the participant's general approval of the review.
+- **Findings:** "Print or save the brief as PDF" with a print stylesheet; a "Project materials" list (repository, standalone brief, ledger CSV, tests, acceptance checklist, AI-assistance log, prior work).
+- **Notice lab:** a collapsible "Try this in 60 seconds" path. **index.html:** Open Graph and Twitter metadata.
+- **Docs:** README rewritten (C01–C24, five views, commands); `docs/LIMITATIONS.md` refreshed to the current project; new `docs/ACCEPTANCE.md`, listing 48/48 automated tests and 8 browser gates as passed, and naming what was not tested (screen reader, measured contrast, physical devices and other browsers, fluent review of the French).
+- New French strings are Claude's drafts, marked in `src/i18n/fr.ts`.

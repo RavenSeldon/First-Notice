@@ -32,6 +32,7 @@ export default function Findings() {
       </p>}
 
       <h2>{tr('The brief')}</h2>
+      <p className="no-print"><button onClick={() => print()}>{tr('Print or save the brief as PDF')}</button></p>
       {written.length === 0
         ? <div className="author-slot" role="note">{tr("The policy brief goes here, in the author's words.")}</div>
         : <div className="brief">{written.map(sec => {
@@ -60,6 +61,16 @@ export default function Findings() {
         <li>The counterfactual replays show how notice timing might change under the proposal. They cannot show that any real-world harm would have been prevented.</li>
         <li>Deterministic tests show the protocol behaves as specified. They do not show harm prevented.</li>
       </ul>}
+
+      <h2 className="no-print">{tr('Project materials')}</h2>
+      <ul className="materials no-print">
+        <li><a href="https://github.com/RavenSeldon/First-Notice" target="_blank" rel="noreferrer">{tr('Source code and README')}</a></li>
+        <li><a href="https://github.com/RavenSeldon/First-Notice/blob/main/docs/FIRST-NOTICE-BRIEF.md" target="_blank" rel="noreferrer">{tr('Standalone policy brief, with references')}</a></li>
+        <li><a href="https://github.com/RavenSeldon/First-Notice/blob/main/evidence/ledger.csv" target="_blank" rel="noreferrer">{tr('Evidence ledger (CSV)')}</a></li>
+        <li><a href="https://github.com/RavenSeldon/First-Notice/tree/main/tests/acceptance" target="_blank" rel="noreferrer">{tr('Acceptance tests')}</a> · <a href="https://github.com/RavenSeldon/First-Notice/blob/main/docs/ACCEPTANCE.md" target="_blank" rel="noreferrer">{tr('acceptance checklist')}</a></li>
+        <li><a href="https://github.com/RavenSeldon/First-Notice/blob/main/docs/AI_ASSISTANCE_LOG.md" target="_blank" rel="noreferrer">{tr('AI-assistance log')}</a></li>
+        <li><a href="https://benamuwo.me/schrodingers_civ/" target="_blank" rel="noreferrer">{tr("Schrödinger's Civilization (prior work)")}</a></li>
+      </ul>
     </section>
   );
 }

@@ -270,3 +270,21 @@ Object.assign(FR, {
     "Proposé : avis urgent dans les {n} heures suivant la découverte admissible; chaque version d'un avis urgent fait l'objet d'un accusé de réception par le destinataire ministériel désigné dans les {a} heures. Les vérifications de l'expéditeur utilisent un registre simulé et des identifiants fictifs, et non une authentification cryptographique.",
 });
 
+// Added 2026-10-31 (final improvement pass): draft translations by Claude, for the participant's review.
+Object.assign(FR, {
+  'Print or save the brief as PDF': 'Imprimer la note ou l’enregistrer en PDF',
+  'Project materials': 'Documents du projet',
+  'Source code and README': 'Code source et README',
+  'Standalone policy brief, with references': 'Note d’orientation autonome, avec références',
+  'Evidence ledger (CSV)': 'Registre des preuves (CSV)',
+  'Acceptance tests': "Tests d'acceptation",
+  'acceptance checklist': "liste de vérification d'acceptation",
+  'AI-assistance log': "Journal d'assistance par l'IA",
+  "Schrödinger's Civilization (prior work)": 'Schrödinger’s Civilization (travaux antérieurs)',
+  'Try this in 60 seconds': 'Essayez ceci en 60 secondes',
+  'Open “Serious, but unproven”: partial evidence still produces T1.': 'Ouvrez « Grave, mais non prouvé » : des preuves partielles produisent quand même un T1.',
+  'Press +24 hours, then +1 hour, without acknowledging: the record escalates.': 'Appuyez sur +24 heures, puis +1 heure, sans accuser réception : le registre déclenche une escalade.',
+  'Press “Update: activity corroborated”: the tier becomes T2.': 'Appuyez sur « Mise à jour : activité corroborée » : le niveau devient T2.',
+  'Open the “Version 1 copy”: the original survives, marked superseded.': "Ouvrez la « copie de la version 1 » : l'original subsiste, marqué comme remplacé.",
+});
+
