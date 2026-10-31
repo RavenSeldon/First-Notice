@@ -31,8 +31,10 @@ export default function Findings() {
         activity, names the recipient in advance, checks the sender, and escalates when no one acknowledges.
       </p>}
 
-      <h2>{tr('The brief')}</h2>
-      <p className="no-print"><button onClick={() => print()}>{tr('Print or save the brief as PDF')}</button></p>
+      <div className="brief-head">
+        <h2>{tr('The brief')}</h2>
+        <button type="button" className="quiet-action no-print" onClick={() => print()} title={tr('Print or save the brief as PDF')}>{tr('Print')} | PDF</button>
+      </div>
       {written.length === 0
         ? <div className="author-slot" role="note">{tr("The policy brief goes here, in the author's words.")}</div>
         : <div className="brief">{written.map(sec => {

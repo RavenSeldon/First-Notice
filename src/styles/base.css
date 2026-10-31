@@ -182,6 +182,11 @@ summary { cursor: pointer; padding: 10px 0; font-weight: 600; min-height: 44px; 
 .recipients li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px dotted var(--rule); }
 .recipients li.is-overdue > span:first-child { color: var(--alert); }
 .ok { color: var(--action); font-weight: 600; }
+.findings .brief-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; max-width: 760px; border-top: 1px solid var(--rule); padding-top: 16px; margin-top: 2.2em; }
+.findings .brief-head h2 { border-top: 0; padding-top: 0; margin: 0 0 .3em; }
+/* Same quiet register as the EN | FR switch */
+.quiet-action { background: none; border: 0; box-shadow: none; min-height: 32px; padding: 6px 0; font: inherit; font-size: .72rem; letter-spacing: .04em; color: var(--muted); cursor: pointer; }
+.quiet-action:hover:not(:disabled) { background: none; color: var(--ink); text-decoration: underline; text-underline-offset: .2em; }
 .materials { padding-left: 1.1em; max-width: 760px; } .materials li { margin-bottom: 6px; } .materials a { color: var(--action); }
 .try-path { margin: 10px 0 0; max-width: 760px; } .try-path ol { margin: 4px 0 8px; padding-left: 1.3em; font-size: .95rem; } .try-path li { margin-bottom: 4px; }
 @media print {

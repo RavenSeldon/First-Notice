@@ -287,4 +287,4 @@ Object.assign(FR, {
   'Press “Update: activity corroborated”: the tier becomes T2.': 'Appuyez sur « Mise à jour : activité corroborée » : le niveau devient T2.',
   'Open the “Version 1 copy”: the original survives, marked superseded.': "Ouvrez la « copie de la version 1 » : l'original subsiste, marqué comme remplacé.",
 });
-
+Object.assign(FR, { Print: 'Imprimer' });
