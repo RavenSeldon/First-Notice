@@ -182,6 +182,8 @@ summary { cursor: pointer; padding: 10px 0; font-weight: 600; min-height: 44px; 
 .recipients li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px dotted var(--rule); }
 .recipients li.is-overdue > span:first-child { color: var(--alert); }
 .ok { color: var(--action); font-weight: 600; }
+.ack-note { margin: 10px 0 0; font-size: .82rem; color: var(--muted); font-style: italic; }
+.lab-scope { margin-top: -6px; }
 .due { margin: 10px 0 0; font-size: .9rem; } .due.late { color: var(--alert); font-weight: 600; }
 .sheet-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 

@@ -62,6 +62,7 @@ export interface Notice {
   provenance: Provenance;
   senderId: string;
   recipientIds: string[];
+  ackRecipientIds?: string[];   // recipients who owe a receipt acknowledgment (the designated departmental recipient)
   discoveredAt: string;         // ISO — qualifying discovery: when the sender identified reportable activity
   issuedAt: string;             // ISO — when this version was issued
   content: NoticeContent;
@@ -92,7 +93,8 @@ export interface LogEvent {
 export interface Registry {
   available?: boolean;          // false = registry could not be consulted (default true)
   senders: Record<string, { name: string; credential: string; status: 'active' | 'revoked' }>;
-  recipients: Record<string, { name: string; channel: string; monitored24x7: boolean }>;
+  /** acknowledges: false = receives a copy (e.g. for coordination) but owes no receipt acknowledgment. Default true. */
+  recipients: Record<string, { name: string; channel: string; monitored24x7: boolean; acknowledges?: boolean }>;
 }
 
 /** Proposed protocol parameters (proposals, not existing law). */

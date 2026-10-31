@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ackRequired, acknowledge, checkOverdue, emptyLedger, exportJSON, history, issue, revise, type IssueInput, type Ledger } from '../domain/event-log';
+import { ackRequired, owesAck, acknowledge, checkOverdue, emptyLedger, exportJSON, history, issue, revise, type IssueInput, type Ledger } from '../domain/event-log';
 import { addHours, hoursBetween } from '../domain/clock';
 import { PROTOCOL, type Authenticity, type LogEvent, type Notice, type Registry } from '../domain/types';
 import { REGISTRY, REGISTRY_DOWN, COUNTERFACTUAL_SA, COUNTERFACTUAL_ASSUMPTIONS, FAILURE_INCOMPLETE, FAILURE_REGISTRY_DOWN, FAILURE_SPOOF, FAILURE_UNACKED } from '../data/synthetic-fixtures';
@@ -12,7 +12,7 @@ const SCENARIOS: Scenario[] = [
   { key: 'cf-on-time', label: 'Services Australia, on the proposed clock', input: COUNTERFACTUAL_SA, at: addHours(COUNTERFACTUAL_SA.discoveredAt, 6),
     note: 'The documented case, if the developer had sent notice six hours after finding it.' },
   { key: 'cf-actual', label: 'Services Australia, on its actual date', input: { ...COUNTERFACTUAL_SA, id: 'CF-SA-2' }, at: '2026-09-10T00:00:00.000Z',
-    note: 'The same notice, sent on 10 September as it really was. The proposed 48-hour clock flags it as late.' },
+    note: 'The simulated notice, issued on the actual notification date, 10 September. Under the proposed 48-hour rule, it is late.' },
   { key: 'spoof', label: 'A forged sender', input: FAILURE_SPOOF, at: addHours(FAILURE_SPOOF.discoveredAt, 2),
     note: 'Someone claims to be a registered developer. The notice still arrives, marked for manual checking, because it might be real.' },
   { key: 'incomplete', label: 'Serious, but unproven', input: FAILURE_INCOMPLETE, at: addHours(FAILURE_INCOMPLETE.discoveredAt, 2),
@@ -20,7 +20,7 @@ const SCENARIOS: Scenario[] = [
   { key: 'noreg', label: 'Registry down', input: FAILURE_REGISTRY_DOWN, at: addHours(FAILURE_REGISTRY_DOWN.discoveredAt, 2), registry: REGISTRY_DOWN,
     note: 'The sender registry cannot be reached. The urgent notice still arrives, marked for manual checking.' },
   { key: 'unacked', label: 'Nobody answers', input: FAILURE_UNACKED, at: addHours(FAILURE_UNACKED.discoveredAt, 2),
-    note: 'Move the clock past 24 hours without acknowledging, and see what happens.' },
+    note: 'Use +24 hours, then +1 hour, without acknowledging. The departmental recipient misses its deadline and the record escalates.' },
 ];
 
 const fmtTime = (iso: string) => new Date(iso).toLocaleString(LOCALE, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' }) + ' UTC';
@@ -49,7 +49,9 @@ const detailText = (e: LogEvent) => {
     case 'verification.manual-required': return AUTH_TEXT(String(d.authenticity));
     case 'notice.received': case 'notice.acknowledged': return `${recipientName(String(d.recipient))}, version ${e.version}`;
     case 'escalation.overdue-ack': return tf('{name}, version {v}, due {due}', { name: recipientName(String(d.recipient)), v: e.version, due: fmtTime(String(d.dueAt)) });
-    case 'escalation.late-notice': return tf('{h} hours after discovery; the proposal allows {limit}', { h: String(d.hoursAfterDiscovery), limit: String(d.limit) });
+    case 'escalation.late-notice': return d.provenance === 'counterfactual'
+      ? t('Late under the proposed 48-hour rule, using the replay assumptions above.')
+      : tf('{h} hours after discovery; the proposal allows {limit}', { h: String(d.hoursAfterDiscovery), limit: String(d.limit) });
     case 'notice.revised': return tf('{reason}. Version {v} supersedes {p}; nothing removed.', { reason: t(String(d.reason)), v: e.version, p: e.version - 1 });
     case 'notice.reclassified': return `${tf('{from} to {to}.', { from: String(d.from), to: String(d.to) })} ${tReasons(d.reasons as string[])}.`;
     default: return '';
@@ -66,6 +68,8 @@ function Sheet({ n, ledger, current, now, onAck }: { n: Notice; ledger: Ledger; 
   const manual = evs.some(e => e.kind === 'verification.manual-required');
   const suspicious = evs.some(e => e.kind === 'notice.routed' && e.detail.suspicious);
   const ackNeeded = ackRequired(ledger, n);
+  const owed = owesAck(n);
+  const allAcked = owed.every(r => acked.has(r));
   const due = addHours(n.issuedAt, PROTOCOL.ackTargetHours);
   const left = hoursBetween(now, due);
 
@@ -92,14 +96,14 @@ function Sheet({ n, ledger, current, now, onAck }: { n: Notice; ledger: Ledger; 
         {current && late && <span className="stamp red">{t('Late notice')}</span>}
         {current && suspicious && <span className="stamp red">{t('Possible spoof')}</span>}
         {current && manual && !suspicious && <span className="stamp blue">{t('Verify sender')}</span>}
-        {current && ackNeeded && acked.size === n.recipientIds.length && <span className="stamp ink">{t('Acknowledged')}</span>}
-        {current && overdue.size > 0 && acked.size < n.recipientIds.length && <span className="stamp red">{t('Overdue')}</span>}
+        {current && ackNeeded && allAcked && <span className="stamp ink">{t('Acknowledged')}</span>}
+        {current && overdue.size > 0 && !allAcked && <span className="stamp red">{t('Overdue')}</span>}
       </div>
 
       <div className="axes" role="group" aria-label={t('Three separate assessments')}>
         <div><span className="axis">{t('Who sent it (simulated)')}</span><span className="val">{AUTH_TEXT(auth)}</span></div>
         <div><span className="axis">{t('What is known')}</span><span className="val">{tf('Evidence {e}; personal data {p}', { e: t(`ev:${n.content.evidence}`).replace(/^ev:/, ''), p: t(`pd:${n.content.personalDataInvolved}`).replace(/^pd:/, '') })}</span></div>
-        <div><span className="axis">{t('How fast')}</span><span className="val">{tf('{tier}; consequence {c}', { tier: TIER_TEXT[n.tier], c: t(`cq:${n.content.consequence}`).replace(/^cq:/, '') })}</span></div>
+        <div><span className="axis">{t('Tier and response')}</span><span className="val">{tf('{tier}; consequence {c}', { tier: TIER_TEXT[n.tier], c: t(`cq:${n.content.consequence}`).replace(/^cq:/, '') })}</span></div>
       </div>
 
       {current && (
@@ -110,12 +114,14 @@ function Sheet({ n, ledger, current, now, onAck }: { n: Notice; ledger: Ledger; 
               <li key={r} className={overdue.has(r) && !acked.has(r) ? 'is-overdue' : ''}>
                 <span>{recipientName(r)}{REGISTRY.recipients[r].monitored24x7 && <span className="qual">{t(' staffed 24/7')}</span>}</span>
                 {!ackNeeded ? <span className="qual">{t('No acknowledgment required')}</span>
+                  : !owed.includes(r) ? <span className="qual">{t('Copy for coordination; no acknowledgment owed')}</span>
                   : acked.has(r) ? <span className="ok">{t('Acknowledged')}</span>
                   : <button onClick={() => onAck(r)}>{t('Acknowledge')}</button>}
               </li>
             ))}
           </ul>
-          {ackNeeded && acked.size < n.recipientIds.length && (
+          {ackNeeded && <p className="ack-note">{t('Acknowledgment confirms receipt only. It does not verify the sender’s claims or establish that a breach occurred.')}</p>}
+          {ackNeeded && !allAcked && (
             <p className={`due ${left < 0 ? 'late' : ''}`}>
               {left >= 0 ? tf('Acknowledgment due within {h} h', { h: Math.ceil(left) }) : tf('Acknowledgment overdue by {h} h', { h: Math.ceil(-left) })}
             </p>
@@ -169,6 +175,7 @@ export default function NoticeLab() {
         ))}
       </div>
       <p className="scenario-note">{t(s.note)}</p>
+      <p className="qual lab-scope">{t('This lab demonstrates selected protocol paths. The Unverified sender state is specified in the brief but not simulated here; Historically unknown applies only to reconstructions of past notices.')}</p>
       {s.input.provenance === 'counterfactual' && (
         <details className="assumptions"><summary>{t('Assumptions behind this replay')}</summary>
           <ul>{COUNTERFACTUAL_ASSUMPTIONS.map(a => <li key={a}>{t(a)}</li>)}</ul>
@@ -199,6 +206,8 @@ export default function NoticeLab() {
               disabled={versions.length >= 5}>{t('Update: still unresolved')}</button>
             <button onClick={() => { setLedger(l => revise(l, id, { evidence: 'corroborated', summary: 'Update: logs corroborate the unauthorized access; scope confirmed' }, 'Logs corroborate the activity', now)); setViewing(null); }}
               disabled={versions.length >= 5 || latest.content.evidence === 'corroborated'}>{t('Update: activity corroborated')}</button>
+            <button onClick={() => { setLedger(l => revise(l, id, { consequence: 'low', personalDataInvolved: 'no', summary: 'Correction: impact reassessed as low' }, 'Impact reassessed as low', now)); setViewing(null); }}
+              disabled={versions.length >= 5 || latest.tier === 'T0'}>{t('Correction: impact reassessed as low')}</button>
             <button onClick={download}>{t('Download the record (JSON)')}</button>
           </div>
         </div>
@@ -216,7 +225,7 @@ export default function NoticeLab() {
               </li>
             ))}
           </ol>
-          <p className="qual">{tf('Proposed: urgent notice within {n} hours of qualifying discovery; each version of an urgent notice acknowledged within {a} hours. Sender checks use a simulated registry and fixture credentials, not cryptographic authentication.', { n: PROTOCOL.t1NoticeHours, a: PROTOCOL.ackTargetHours })}</p>
+          <p className="qual">{tf('Proposed: urgent notice within {n} hours of qualifying discovery; each version of an urgent notice acknowledged by the designated departmental recipient within {a} hours. Sender checks use a simulated registry and fixture credentials, not cryptographic authentication.', { n: PROTOCOL.t1NoticeHours, a: PROTOCOL.ackTargetHours })}</p>
         </aside>
       </div>
     </section>

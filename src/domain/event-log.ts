@@ -39,6 +39,7 @@ export function issue(l: Ledger, reg: Registry, input: IssueInput, now: string):
   const n: Notice = Object.freeze({
     id: input.id, version: 1, tier: t.tier, provenance: input.provenance,
     parentInvestigationId: input.parentInvestigationId, caseId: input.caseId,
+    ackRecipientIds: r.deliverTo.filter(id => reg.recipients[id]?.acknowledges !== false),
     senderId: input.senderId, recipientIds: r.deliverTo, discoveredAt: input.discoveredAt,
     issuedAt: now, content: Object.freeze({ ...input.content }), sourceIds: input.sourceIds ?? [],
   });
@@ -46,7 +47,7 @@ export function issue(l: Ledger, reg: Registry, input: IssueInput, now: string):
   out = append(out, now, 'notice.issued', n, { tier: t.tier, reasons: t.reasons });
   const late = hoursBetween(input.discoveredAt, now);
   if (t.tier !== 'T0' && late > PROTOCOL.t1NoticeHours) {
-    out = append(out, now, 'escalation.late-notice', n, { hoursAfterDiscovery: Math.round(late), limit: PROTOCOL.t1NoticeHours });
+    out = append(out, now, 'escalation.late-notice', n, { hoursAfterDiscovery: Math.round(late), limit: PROTOCOL.t1NoticeHours, provenance: n.provenance });
   }
   out = append(out, now, 'sender.checked', n, {
     authenticity: auth, canonical: CANONICAL[auth], method: VERIFICATION_METHOD,
@@ -62,6 +63,9 @@ const received = (l: Ledger, n: Notice, recipient: string) =>
   l.events.some(e => e.noticeId === n.id && e.version === n.version && e.kind === 'notice.received' && e.detail.recipient === recipient);
 const acknowledged = (l: Ledger, n: Notice, recipient: string) =>
   l.events.some(e => e.noticeId === n.id && e.version === n.version && e.kind === 'notice.acknowledged' && e.detail.recipient === recipient);
+
+/** Who owes a receipt acknowledgment: the designated departmental recipient(s), not coordination copies. */
+export const owesAck = (n: Notice) => n.ackRecipientIds ?? n.recipientIds;
 
 /** Every T1 or T2 version needs its own receipt acknowledgment; T0 versions do not. */
 export const ackRequired = (_l: Ledger, n: Notice) => n.tier !== 'T0';
@@ -104,7 +108,7 @@ export function revise(l: Ledger, noticeId: string, changes: Partial<NoticeConte
 export function checkOverdue(l: Ledger, now: string): Ledger {
   let out = l;
   for (const n of l.notices.filter(x => ackRequired(l, x))) {
-    for (const rec of n.recipientIds) {
+    for (const rec of owesAck(n)) {
       if (!received(l, n, rec) || acknowledged(l, n, rec)) continue;
       const already = out.events.some(e => e.noticeId === n.id && e.version === n.version && e.kind === 'escalation.overdue-ack' && e.detail.recipient === rec);
       const due = addHours(n.issuedAt, PROTOCOL.ackTargetHours);

@@ -1,6 +1,6 @@
 /** Acceptance tests added after the 2026-10-30 external review (ChatGPT, GPT-6 "Astra"). */
 import { describe, expect, it } from 'vitest';
-import { acknowledge, checkOverdue, emptyLedger, exportJSON, importJSON, issue, latest, revise } from '../../src/domain/event-log';
+import { acknowledge, checkOverdue, emptyLedger, exportJSON, importJSON, issue, latest, owesAck, revise } from '../../src/domain/event-log';
 import { checkSender, VERIFICATION_METHOD } from '../../src/domain/verification';
 import { CASES } from '../../src/data/historical-cases';
 import { REGISTRY, REGISTRY_DOWN, COUNTERFACTUAL_SA, FAILURE_INCOMPLETE, FAILURE_REGISTRY_DOWN, FAILURE_UNACKED } from '../../src/data/synthetic-fixtures';
@@ -26,7 +26,7 @@ describe('T2 updates complete the notification lifecycle', () => {
     l = revise(l, FAILURE_UNACKED.id, { evidence: 'corroborated' }, 'Update', T(2));
     l = checkOverdue(l, T(26.5));
     const esc = l.events.filter(e => e.kind === 'escalation.overdue-ack');
-    expect(esc.length).toBe(l.notices[0].recipientIds.length);
+    expect(esc.length).toBe(owesAck(l.notices[0]).length);
     expect(esc.every(e => e.version === 2)).toBe(true);
   });
 });
@@ -89,5 +89,30 @@ describe('Date precision is displayed, never invented', () => {
   it('the NPWS contact is shown as a window, not a date', () => {
     const t = CASES.find(c => c.id === 'npws')!.timeline.find(x => x.sourceIds.includes('C09') && x.precision === 'approximate')!;
     expect(t.display).toBe('Within 48 hours of 29 September');
+  });
+});
+
+describe('Who owes the 24-hour acknowledgment (aligned with BRIEF 3)', () => {
+  it('the designated departmental recipient owes it; the national cyber centre receives a coordination copy', () => {
+    const l = issue(emptyLedger(), REGISTRY, FAILURE_UNACKED, T(0));
+    const n = l.notices[0];
+    expect(n.recipientIds).toEqual(expect.arrayContaining(['agency-security', 'cyber-centre']));
+    expect(owesAck(n)).toEqual(['agency-security']);
+  });
+  it('only the departmental recipient escalates when silent', () => {
+    const l = checkOverdue(issue(emptyLedger(), REGISTRY, FAILURE_UNACKED, T(0)), T(24.5));
+    expect(l.events.filter(e => e.kind === 'escalation.overdue-ack').map(e => e.detail.recipient)).toEqual(['agency-security']);
+  });
+  it('one departmental acknowledgment clears the notice', () => {
+    let l = issue(emptyLedger(), REGISTRY, FAILURE_UNACKED, T(0));
+    l = acknowledge(l, FAILURE_UNACKED.id, 'agency-security', T(1));
+    expect(checkOverdue(l, T(30)).events.some(e => e.kind === 'escalation.overdue-ack')).toBe(false);
+  });
+});
+
+describe('Counterfactual precision', () => {
+  it('a counterfactual late notice is marked as counterfactual, so its hour count is never shown as fact', () => {
+    const l = issue(emptyLedger(), REGISTRY, COUNTERFACTUAL_SA, '2026-09-10T00:00:00.000Z');
+    expect(l.events.find(e => e.kind === 'escalation.late-notice')!.detail.provenance).toBe('counterfactual');
   });
 });

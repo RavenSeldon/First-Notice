@@ -8,7 +8,7 @@ export const REGISTRY: Registry = {
     'dev-beta': { name: 'Frontier Developer B (simulated)', credential: 'key-beta', status: 'revoked' },
   },
   recipients: {
-    'cyber-centre': { name: 'National cyber centre (simulated, 24/7)', channel: 'secure-intake', monitored24x7: true },
+    'cyber-centre': { name: 'National cyber centre (simulated, 24/7)', channel: 'secure-intake', monitored24x7: true, acknowledges: false },
     'agency-security': { name: 'Affected agency security team (simulated)', channel: 'designated-contact', monitored24x7: false },
     'public-inbox': { name: 'General public-disclosures inbox (simulated)', channel: 'email', monitored24x7: false },
   },

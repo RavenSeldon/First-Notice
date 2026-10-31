@@ -249,3 +249,24 @@ export const CLAIMS_FR: Record<string, [claim: string, qualification: string]> =
   C23: ["Gallagher : le portail était un site statistique public autonome, distinct des demandes de remboursement Medicare et des renseignements individuels; le délai d'escalade faisait l'objet d'une enquête", "Récit de la ministre; résultat de l'enquête pas encore public dans ce dossier"],
   C24: ['Selon le PGEC du GC, le Centre pour la cybersécurité est le centre national de coordination des cyberincidents au Canada; il donne des directives et des conseils techniques aux ministères et organismes', "Décrit le rôle du Centre pour la cybersécurité selon le plan existant; n'établit aucun rôle dans la voie proposée pour les agents d'IA"],
 };
+
+// Added 2026-10-30 (Notice Lab review): draft translations by Claude, for the participant's review.
+Object.assign(FR, {
+  'The simulated notice, issued on the actual notification date, 10 September. Under the proposed 48-hour rule, it is late.':
+    "L'avis simulé, émis à la date réelle de notification, le 10 septembre. Selon la règle proposée de 48 heures, il est tardif.",
+  'Use +24 hours, then +1 hour, without acknowledging. The departmental recipient misses its deadline and the record escalates.':
+    "Utilisez +24 heures, puis +1 heure, sans accuser réception. Le destinataire ministériel manque son échéance et le registre déclenche une escalade.",
+  'Late under the proposed 48-hour rule, using the replay assumptions above.':
+    'Tardif selon la règle proposée de 48 heures, d’après les hypothèses de reconstitution ci-dessus.',
+  'Tier and response': 'Niveau et intervention',
+  'Copy for coordination; no acknowledgment owed': 'Copie pour coordination; aucun accusé de réception exigé',
+  'Acknowledgment confirms receipt only. It does not verify the sender’s claims or establish that a breach occurred.':
+    "L'accusé de réception confirme seulement la réception. Il ne vérifie pas les affirmations de l'expéditeur et n'établit pas qu'une atteinte a eu lieu.",
+  'Correction: impact reassessed as low': 'Correction : incidence réévaluée comme faible',
+  'Impact reassessed as low': 'Incidence réévaluée comme faible',
+  'This lab demonstrates selected protocol paths. The Unverified sender state is specified in the brief but not simulated here; Historically unknown applies only to reconstructions of past notices.':
+    "Ce laboratoire présente certains parcours du protocole. L'état d'expéditeur Non vérifié est précisé dans la note, mais n'est pas simulé ici; l'état Inconnu (historique) s'applique seulement aux reconstitutions d'avis passés.",
+  'Proposed: urgent notice within {n} hours of qualifying discovery; each version of an urgent notice acknowledged by the designated departmental recipient within {a} hours. Sender checks use a simulated registry and fixture credentials, not cryptographic authentication.':
+    "Proposé : avis urgent dans les {n} heures suivant la découverte admissible; chaque version d'un avis urgent fait l'objet d'un accusé de réception par le destinataire ministériel désigné dans les {a} heures. Les vérifications de l'expéditeur utilisent un registre simulé et des identifiants fictifs, et non une authentification cryptographique.",
+});
+
