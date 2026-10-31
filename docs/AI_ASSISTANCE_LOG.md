@@ -177,3 +177,7 @@ Copy the block below for each substantial new action. Add newest entries below e
 ### 2026-10-30 20:45–20:52 (America/Vancouver) — BRIEF 3 (participant-authored); Claude checks
 - Participant supplied BRIEF 3. Claude placed it, removing only escaped brackets (3 citations), and flagged a missing tier list and one claim with no supporting ledger entry (the Cyber Centre's coordination role, cited only to C15).
 - Participant supplied the T0/T1/T2 definitions, which Claude inserted as a list, unchanged. Verified at source and added **C24** (GC CSEMP Table C-1: Cyber Centre as national coordination centre; technical direction and advice); cited on the role sentence at the participant's request. No other wording changed. 832 words.
+
+### 2026-10-30 20:51–20:55 (America/Vancouver) — BRIEF 4 (participant-authored); Claude checks
+- Participant supplied BRIEF 4. Claude placed it, removing only escaped brackets (5 citations). Flagged one sentence going beyond C10 ("reputational and commercial exposure"; burden on recipients) and one imprecise citation.
+- At the participant's choice: the sentence was narrowed to Claude's suggested wording, which stays within the C10 passages ("legal exposure … over-reporting and unreasonable burden"), and C22 was added beside C09 on the NSW technical-notification sentence. No other changes. 628 words.
