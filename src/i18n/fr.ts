@@ -65,7 +65,7 @@ export const FR: Record<string, string> = {
   'First technical exchange': 'Premier échange technique',
   'Exact access date comes only from the Sept 28 interview (C01).': "La date exacte de l'accès provient uniquement de l'entrevue du 28 septembre (C01).",
   'Delay explanation relayed from Services Australia; still under investigation (C06).': "L'explication du délai est relayée par Services Australia et fait toujours l'objet d'une enquête (C06).",
-  "OpenAI accepting the ASD-channel view is the Minister's understanding (C11).": "L'acceptation par OpenAI du canal de l'ASD relève de la compréhension de la ministre (C11).",
+  "OpenAI accepting the ASD-channel view is the Minister's understanding (C11).": "Qu'OpenAI ait accepté la voie de l'ASD repose sur ce qu'en a compris la ministre (C11).",
   'Exposed access key used to retrieve reporting configuration and aggregate statistics.': "Clé d'accès exposée, utilisée pour récupérer la configuration des rapports et des statistiques agrégées.",
   'Notified by OpenAI': 'Avisé par OpenAI',
   "Developer's account only.": 'Récit du développeur seulement.',
@@ -73,11 +73,11 @@ export const FR: Record<string, string> = {
   'Aggregate statistics retrieved; separate bypass attempts unsuccessful.': 'Statistiques agrégées récupérées; des tentatives de contournement distinctes ont échoué.',
   "Notified (below OpenAI's disclosure threshold)": "Avisé (sous le seuil de divulgation d'OpenAI)",
   "Below the developer's own disclosure threshold; notified to share findings.": 'Sous le propre seuil de divulgation du développeur; avisé pour partager les constats.',
-  'Separately discovered later; crafted queries inferred non-public database metadata.': 'Découvert plus tard et séparément; des requêtes construites ont permis de déduire des métadonnées non publiques de bases de données.',
+  'Separately discovered later; crafted queries inferred non-public database metadata.': 'Découvert plus tard et séparément; des requêtes conçues à cette fin ont permis de déduire des métadonnées non publiques de bases de données.',
   'OpenAI identifies the activity': "OpenAI détecte l'activité",
   'Within 48 hours of 29 September': 'Dans les 48 heures suivant le 29 septembre',
   'Initial contact': 'Premier contact',
-  '48 h is to initial contact, not completed technical notification.': 'Les 48 h mènent au premier contact, non à la notification technique complète.',
+  '48 h is to initial contact, not completed technical notification.': 'Les 48 h correspondent au premier contact, non à la notification technique complète.',
   'Distinct from BOCSAR.': 'Distinct du BOCSAR.',
 
   // CaseFiles
@@ -103,7 +103,7 @@ export const FR: Record<string, string> = {
   'Australia: critical infrastructure 12 h (critical) / 72 h (other)': 'Australie : infrastructures essentielles, 12 h (critique) / 72 h (autre)',
   'Covered assets only.': 'Biens visés seulement.',
   'OECD common AI-incident reporting framework: 29 criteria': "Cadre commun de l'OCDE pour le signalement des incidents d'IA : 29 critères",
-  'Informs interoperable fields; non-binding.': 'Oriente des champs interopérables; non contraignant.',
+  'Informs interoperable fields; non-binding.': 'Éclaire la définition de champs interopérables; non contraignant.',
 
   // Evidence view
   'The evidence ledger.': 'Le registre des preuves.',
@@ -123,10 +123,10 @@ export const FR: Record<string, string> = {
 
   // Notice lab: scenarios
   'Services Australia, on the proposed clock': 'Services Australia, selon le délai proposé',
-  'The documented case, if the developer had sent notice six hours after finding it.': "Le cas documenté, si le développeur avait envoyé l'avis six heures après sa découverte.",
+  'The documented case, if the developer had sent notice six hours after finding it.': "Le cas documenté, si le développeur avait envoyé l'avis six heures après avoir découvert l'activité.",
   'Services Australia, on its actual date': 'Services Australia, à sa date réelle',
   'The same notice, sent on 10 September as it really was. The proposed 48-hour clock flags it as late.': 'Le même avis, envoyé le 10 septembre comme ce fut réellement le cas. Le délai proposé de 48 heures le signale comme tardif.',
-  'A forged sender': 'Un expéditeur falsifié',
+  'A forged sender': 'Un expéditeur usurpé',
   'Someone claims to be a registered developer. The notice still arrives, marked for manual checking, because it might be real.': "Quelqu'un prétend être un développeur inscrit. L'avis arrive quand même, marqué pour vérification manuelle, car il pourrait être authentique.",
   'Serious, but unproven': 'Grave, mais non prouvé',
   'High potential consequence, partial evidence. Uncertainty does not lower urgency.': "Conséquence potentielle élevée, preuves partielles. L'incertitude ne réduit pas l'urgence.",
@@ -136,7 +136,7 @@ export const FR: Record<string, string> = {
   'Move the clock past 24 hours without acknowledging, and see what happens.': "Avancez l'horloge au-delà de 24 heures sans accuser réception, et voyez ce qui se passe.",
   'Discovery set to 15 Aug 2026 to represent "mid-August" (C02); the real day is unknown.': 'Découverte fixée au 15 août 2026 pour représenter la « mi-août » (C02); le jour réel est inconnu.',
   'Developer is a registered sender with a valid credential (simulated registry match, not cryptographic authentication).': "Le développeur est un expéditeur inscrit muni d'un justificatif valide (correspondance simulée au registre, non une authentification cryptographique).",
-  'A designated 24/7 recipient exists — modelled on the post-incident reroute (C08), not on any existing Canadian channel.': "Un destinataire désigné, en service 24/7, existe — calqué sur la réorientation faite après l'incident (C08), et non sur un canal canadien existant.",
+  'A designated 24/7 recipient exists — modelled on the post-incident reroute (C08), not on any existing Canadian channel.': "Il existe un destinataire désigné en service 24/7 — calqué sur la réorientation faite après l'incident (C08), et non sur un canal canadien existant.",
   'Clock values (48 h notice, 24 h acknowledgment) are proposals, not existing law.': 'Les délais (avis en 48 h, accusé de réception en 24 h) sont des propositions, non des lois en vigueur.',
 
   // Notice lab: tiers, events, details
@@ -146,17 +146,17 @@ export const FR: Record<string, string> = {
   'T0 information': 'T0 information', 'T1 provisional': 'T1 provisoire', 'T2 substantiated': 'T2 étayé',
   'Notice issued': 'Avis émis', 'Update issued': 'Mise à jour émise', Reclassified: 'Reclassé', 'Sender checked': "Vérification de l'expéditeur",
   Routed: 'Acheminé', Received: 'Reçu', Acknowledged: 'Réception confirmée', 'Manual verification required': 'Vérification manuelle requise',
-  'Overdue: escalated': 'En retard : escaladé', 'Late notice: escalated': 'Avis tardif : escaladé',
+  'Overdue: escalated': 'En retard : escalade déclenchée', 'Late notice: escalated': 'Avis tardif : escalade déclenchée',
   'High potential consequence': 'Conséquence potentielle élevée',
   'Moderate consequence with personal data yes': 'Conséquence modérée avec données personnelles en cause',
   'Moderate consequence with personal data unknown': 'Conséquence modérée; présence de données personnelles inconnue',
-  'Corroborated: substantiated notifiable activity': 'Corroboré : activité à déclarer étayée',
+  'Corroborated: substantiated notifiable activity': 'Corroboré : activité étayée, à déclarer',
   'Evidence partial: uncertainty does not lower urgency': "Preuves partielles : l'incertitude ne réduit pas l'urgence",
   'Evidence unverified: uncertainty does not lower urgency': "Preuves non vérifiées : l'incertitude ne réduit pas l'urgence",
   'Informational: no mandatory acknowledgment': 'Informatif : aucun accusé de réception obligatoire',
   'Simulated registry lookup against fixture credentials; not cryptographic authentication': 'Consultation simulée du registre avec des justificatifs de test; non une authentification cryptographique',
-  'Sender credential failed: delivered for manual verification and flagged as possible spoof': "Échec du justificatif de l'expéditeur : livré pour vérification manuelle et signalé comme usurpation possible",
-  'Sender not verified: delivered for manual verification': 'Expéditeur non vérifié : livré pour vérification manuelle',
+  'Sender credential failed: delivered for manual verification and flagged as possible spoof': "Échec du justificatif de l'expéditeur : transmis pour vérification manuelle et signalé comme usurpation possible",
+  'Sender not verified: delivered for manual verification': 'Expéditeur non vérifié : transmis pour vérification manuelle',
   'Sender verified': 'Expéditeur vérifié',
   Verified: 'Vérifié', Unverified: 'Non vérifié', Failed: 'Échec', 'Registry unavailable': 'Registre indisponible', 'Historically unknown': 'Inconnu (historique)',
   'simulated registry match': 'correspondance simulée au registre',
@@ -171,6 +171,7 @@ export const FR: Record<string, string> = {
   '{name}, version {v}, due {due}': '{name}, version {v}, échéance {due}',
   '{from} to {to}.': 'De {from} à {to}.',
   '{a}: {b}': '{a} : {b}',
+  'Update delivered to every recipient of the original notice': "Mise à jour transmise à tous les destinataires de l'avis initial",
 
   // Registry and fixtures
   'Frontier Developer A (simulated)': "Développeur d'IA de pointe A (simulé)",
@@ -189,7 +190,7 @@ export const FR: Record<string, string> = {
   'Update: logs corroborate the unauthorized access; scope confirmed': "Mise à jour : les journaux corroborent l'accès non autorisé; portée confirmée",
   'Logs corroborate the activity': "Les journaux corroborent l'activité",
   'ev:corroborated': 'corroborées', 'ev:partial': 'partielles', 'ev:unverified': 'non vérifiées',
-  'pd:yes': 'oui', 'pd:no': 'non', 'pd:unknown': 'inconnu',
+  'pd:yes': 'oui', 'pd:no': 'non', 'pd:unknown': 'indéterminé',
   'cq:low': 'faible', 'cq:moderate': 'modérée', 'cq:high': 'élevée',
 
   // Notice lab: sheet and controls
@@ -202,11 +203,11 @@ export const FR: Record<string, string> = {
   'Who sent it (simulated)': "Qui l'a envoyé (simulé)", 'What is known': 'Ce qui est connu', 'How fast': 'À quelle vitesse',
   'Evidence {e}; personal data {p}': 'Preuves {e}; données personnelles : {p}',
   '{tier}; consequence {c}': '{tier}; conséquence {c}',
-  'Delivered to': 'Livré à', ' staffed 24/7': ' en service 24/7',
+  'Delivered to': 'Transmis à', ' staffed 24/7': ' en service 24/7',
   'No acknowledgment required': 'Aucun accusé de réception requis', Acknowledge: 'Accuser réception',
   'Acknowledgment due within {h} h': 'Accusé de réception attendu dans {h} h',
   'Acknowledgment overdue by {h} h': 'Accusé de réception en retard de {h} h',
-  'Send a notice through the protocol.': 'Faites passer un avis par le protocole.',
+  'Send a notice through the protocol.': 'Faites cheminer un avis dans le protocole.',
   "Pick a case, move the clock, acknowledge or don't, send updates. The tier follows the evidence; every version stays in a record that only grows.":
     "Choisissez un cas, avancez l'horloge, accusez réception ou non, envoyez des mises à jour. Le niveau suit les preuves; chaque version demeure dans un dossier qui ne fait que croître.",
   Case: 'Cas', 'Assumptions behind this replay': 'Hypothèses de cette reconstitution',
@@ -232,9 +233,9 @@ export const CLAIMS_FR: Record<string, [claim: string, qualification: string]> =
   C06: ['Le délai de vérification est attribué à une boîte consultée une fois par jour, à de fréquents canulars, à une fin de semaine et à la vérification technique', 'Explication relayée par Services Australia; Gallagher dit ne pas avoir arrêté sa réflexion (28 septembre)'],
   C07: ["OpenAI a avisé Services Australia et Vic Health (10 septembre), le BOCSAR de la Nouvelle-Galles du Sud (18 septembre) et l'AIHW (24 septembre), bien que l'AIHW fût sous son seuil de divulgation", 'Récit du développeur seulement'],
   C08: ["Services Australia a réorienté l'adresse de signalement directement vers un Cyber Centre en service 24/7", "Changement fait par Services Australia, date non précisée; « le Cyber Centre » n'est pas davantage précisé"],
-  C09: ["Dans le cas ultérieur du NPWS de la Nouvelle-Galles du Sud, OpenAI dit que le premier contact a eu lieu dans les 48 heures suivant la détection de l'activité (découverte le 29 septembre)", "Récit du développeur seulement; les 48 h mènent au premier contact, non à la notification technique complète; l'organisme est le NPWS/DCCEEW de la Nouvelle-Galles du Sud (distinct du BOCSAR)"],
+  C09: ["Dans le cas ultérieur du NPWS de la Nouvelle-Galles du Sud, OpenAI dit que le premier contact a eu lieu dans les 48 heures suivant la détection de l'activité (découverte le 29 septembre)", "Récit du développeur seulement; les 48 h correspondent au premier contact, non à la notification technique complète; l'organisme est le NPWS/DCCEEW de la Nouvelle-Galles du Sud (distinct du BOCSAR)"],
   C10: ['La consultation canadienne traite du signalement excessif, de la divulgation et de la responsabilité, de l’interopérabilité et de l’approvisionnement', "Questions de consultation, non une politique adoptée; dates d'ouverture et de clôture absentes de la page; les derniers ~20 % de la page n'ont pas été lus"],
-  C11: ["L'ASD et Services Australia ont dit à OpenAI que l'avis aurait dû passer par l'ASD ou par des canaux supérieurs de Services Australia; OpenAI l'aurait accepté", "L'acceptation d'OpenAI relève de la compréhension de Gallagher, non d'une déclaration d'OpenAI; la même conférence de presse est reprise sur katygallagher.com.au — citer la transcription de la Défense comme référence"],
+  C11: ["L'ASD et Services Australia ont dit à OpenAI que l'avis aurait dû passer par l'ASD ou par des canaux supérieurs de Services Australia; OpenAI l'aurait accepté", "Qu'OpenAI ait accepté repose sur ce qu'en a compris Gallagher, non sur une déclaration d'OpenAI; la même conférence de presse est reprise sur katygallagher.com.au — citer la transcription de la Défense comme référence"],
   C12: ['Les ministres ont été informés vers le 17 septembre; le premier échange technique a eu lieu le mardi 22 septembre', 'Le 22 septembre est déduit de « mardi cette semaine » par rapport au jeudi 24 septembre'],
   C13: ["Gallagher juge essentielle une obligation de signalement, tout en reconnaissant qu'OpenAI a signalé volontairement", 'Point de vue de la ministre; politique non adoptée'],
   C14: ['La boîte de signalement était destinée surtout aux chercheurs signalant des vulnérabilités', ''],
@@ -255,7 +256,7 @@ Object.assign(FR, {
   'The simulated notice, issued on the actual notification date, 10 September. Under the proposed 48-hour rule, it is late.':
     "L'avis simulé, émis à la date réelle de notification, le 10 septembre. Selon la règle proposée de 48 heures, il est tardif.",
   'Use +24 hours, then +1 hour, without acknowledging. The departmental recipient misses its deadline and the record escalates.':
-    "Utilisez +24 heures, puis +1 heure, sans accuser réception. Le destinataire ministériel manque son échéance et le registre déclenche une escalade.",
+    "Appuyez sur +24 heures, puis sur +1 heure, sans accuser réception. Le destinataire ministériel ne respecte pas son échéance et une escalade est consignée au dossier.",
   'Late under the proposed 48-hour rule, using the replay assumptions above.':
     'Tardif selon la règle proposée de 48 heures, d’après les hypothèses de reconstitution ci-dessus.',
   'Tier and response': 'Niveau et intervention',
@@ -267,7 +268,7 @@ Object.assign(FR, {
   'This lab demonstrates selected protocol paths. The Unverified sender state is specified in the brief but not simulated here; Historically unknown applies only to reconstructions of past notices.':
     "Ce laboratoire présente certains parcours du protocole. L'état d'expéditeur Non vérifié est précisé dans la note, mais n'est pas simulé ici; l'état Inconnu (historique) s'applique seulement aux reconstitutions d'avis passés.",
   'Proposed: urgent notice within {n} hours of qualifying discovery; each version of an urgent notice acknowledged by the designated departmental recipient within {a} hours. Sender checks use a simulated registry and fixture credentials, not cryptographic authentication.':
-    "Proposé : avis urgent dans les {n} heures suivant la découverte admissible; chaque version d'un avis urgent fait l'objet d'un accusé de réception par le destinataire ministériel désigné dans les {a} heures. Les vérifications de l'expéditeur utilisent un registre simulé et des identifiants fictifs, et non une authentification cryptographique.",
+    "Proposé : avis urgent dans les {n} heures suivant la découverte admissible; chaque version d'un avis urgent fait l'objet d'un accusé de réception par le destinataire ministériel désigné dans les {a} heures. Les vérifications de l'expéditeur utilisent un registre simulé et des justificatifs de test, et non une authentification cryptographique.",
 });
 
 // Added 2026-10-31 (final improvement pass): draft translations by Claude, for the participant's review.
@@ -281,9 +282,9 @@ Object.assign(FR, {
   'acceptance checklist': "liste de vérification d'acceptation",
   'AI-assistance log': "Journal d'assistance par l'IA",
   "Schrödinger's Civilization (prior work)": 'Schrödinger’s Civilization (travaux antérieurs)',
-  'Try this in 60 seconds': 'Essayez ceci en 60 secondes',
-  'Open “Serious, but unproven”: partial evidence still produces T1.': 'Ouvrez « Grave, mais non prouvé » : des preuves partielles produisent quand même un T1.',
-  'Press +24 hours, then +1 hour, without acknowledging: the record escalates.': 'Appuyez sur +24 heures, puis +1 heure, sans accuser réception : le registre déclenche une escalade.',
+  'Try this in 60 seconds': 'À essayer en 60 secondes',
+  'Open “Serious, but unproven”: partial evidence still produces T1.': 'Ouvrez « Grave, mais non prouvé » : des preuves partielles donnent quand même un avis T1.',
+  'Press +24 hours, then +1 hour, without acknowledging: the record escalates.': 'Appuyez sur +24 heures, puis sur +1 heure, sans accuser réception : une escalade est consignée au dossier.',
   'Press “Update: activity corroborated”: the tier becomes T2.': 'Appuyez sur « Mise à jour : activité corroborée » : le niveau devient T2.',
   'Open the “Version 1 copy”: the original survives, marked superseded.': "Ouvrez la « copie de la version 1 » : l'original subsiste, marqué comme remplacé.",
 });

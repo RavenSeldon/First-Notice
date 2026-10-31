@@ -11,7 +11,7 @@ Cette limite compte. Un contrat pourrait inclure expressément certains essais e
 
 La proposition prolongerait le cadre existant du Canada, sans le remplacer. Le Plan de gestion des événements de cybersécurité du gouvernement du Canada exige déjà que les organisations fédérales signalent les cyberincidents détectés au Centre canadien pour la cybersécurité dès que possible, et au plus tard une heure après leur détection, avec des précisions dans les 24 heures. Les fournisseurs tiers doivent gérer et signaler les cyberévénements conformément à leurs contrats [C15, C19]. La nouvelle clause normaliserait un déclencheur propre aux agents d’IA et une voie de notification précoce pour les découvertes visées, au lieu de s’en remettre uniquement au libellé de chaque contrat.
 
-## Quand un avertissement devient-il à signaler?
+## À partir de quand un avertissement doit-il être signalé?
 
 Un fournisseur ne devrait pas attendre la fin d’une enquête avant de partager un avertissement crédible. Le délai de 48 heures commencerait lorsque le fournisseur relève pour la première fois des preuves atteignant le seuil contractuel — non à la première anomalie inexpliquée, et non seulement après un préjudice confirmé. Les découvertes admissibles pourraient comprendre l’utilisation non autorisée d’outils, l’accès à des systèmes restreints ou une tentative d’extraction de renseignements sensibles, lorsque les conséquences potentielles sont importantes.
 
@@ -21,7 +21,7 @@ Les avis utiliseraient trois niveaux fondés sur les preuves :
 
 - **T0 — Information :** Observations pertinentes qui n’atteignent pas le seuil de notification provisoire. Aucun accusé de réception n’est requis.
 - **T1 — Provisoire :** Activité crédible et potentiellement importante qui n’a pas encore été étayée. Elle exige un accusé de réception dans les 24 heures.
-- **T2 — Étayé :** Activité non autorisée corroborée et importante qui justifie une mise à jour technique à déclarer et exploitable.
+- **T2 — Étayé :** Activité non autorisée corroborée et importante qui justifie une mise à jour technique exploitable, à déclarer obligatoirement.
 
 Un avis ne conserverait pas son niveau initial de façon permanente. Chaque version serait évaluée selon ses propres preuves : un avertissement T1 pourrait demeurer provisoire, passer à T2 après corroboration, ou être abaissé à la suite d’une correction. Les versions antérieures seraient conservées, et les changements de classification consignés séparément. On verrait ainsi ce que chaque partie savait et à quel moment, sans réécrire l’historique de l’enquête.
 

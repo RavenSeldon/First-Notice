@@ -201,3 +201,7 @@ Copy the block below for each substantial new action. Add newest entries below e
 - **Notice lab:** a collapsible "Try this in 60 seconds" path. **index.html:** Open Graph and Twitter metadata.
 - **Docs:** README rewritten (C01–C24, five views, commands); `docs/LIMITATIONS.md` refreshed to the current project; new `docs/ACCEPTANCE.md`, listing 48/48 automated tests and 8 browser gates as passed, and naming what was not tested (screen reader, measured contrast, physical devices and other browsers, fluent review of the French).
 - New French strings are Claude's drafts, marked in `src/i18n/fr.ts`.
+
+### 2026-10-31 10:26 (America/Vancouver) — Provenance clarification (participant)
+- The French translation (`src/i18n/fr.ts`, `content/brief/fr/`) was produced by a separate Claude session at the participant's request. Strings appended later and marked as such in `fr.ts` are drafts by this session. The participant is doing a final review pass.
+- All external review passes (technical build, protocol decisions, writing kit, Notice Lab, final improvement pass) were by OpenAI ChatGPT (GPT-6 "Astra", participant-reported). The earlier entries stand as recorded.
